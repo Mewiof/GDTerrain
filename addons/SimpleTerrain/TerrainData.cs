@@ -566,20 +566,24 @@ namespace SimpleTerrain {
 
 			float maxDistance2D = rayOrigin2D.DistanceTo(rayEnd2D);
 			if (maxDistance2D < .001f) {
+				// not hitting the terrain
 				return null;
 			}
 
 			float beginClipParam = rayOrigin2D.DistanceTo(clippedSegment2D[0]) / maxDistance2D;
-
 			Vector2 rayDirection2D = direction.XZ().Normalized();
-			CellRaycastContext context = new() {
-				beginPos = origin + direction * (beginClipParam * maxDistance),
-				dir = direction,
-				dir2D = rayDirection2D,
-				verticalBounds = _chunkedVerticalBounds,
-				heightmap = heightmap,
-				cellParam2DTo3D = maxDistance / maxDistance2D,
-			};
+			float cellParam2DTo3D = maxDistance / maxDistance2D;
+
+			CellRaycastContext context = CellRaycastContext.globalPool.Get();
+			context.Set(
+				origin + (direction * (beginClipParam * maxDistance)),
+				direction,
+				rayDirection2D,
+				_chunkedVerticalBounds,
+				heightmap,
+				cellParam2DTo3D * VERTICAL_BOUNDS_CHUNK_SIZE,
+				cellParam2DTo3D
+				);
 			context.broadParam2DTo3D = context.cellParam2DTo3D * VERTICAL_BOUNDS_CHUNK_SIZE;
 
 			Vector2 broadRayOrigin = clippedSegment2D[0] / VERTICAL_BOUNDS_CHUNK_SIZE;
@@ -590,8 +594,9 @@ namespace SimpleTerrain {
 				return null;
 			}
 
-			GD.Print(context.hit);
-			return new((int)context.hit.x, (int)context.hit.z);
+			Vector2i result = new((int)context.hit.x, (int)context.hit.z);
+			CellRaycastContext.globalPool.Return(context);
+			return result;
 		}
 	}
 }
