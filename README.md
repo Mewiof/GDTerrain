@@ -16,3 +16,6 @@
 ###### ~
 
 ![owo](https://user-images.githubusercontent.com/115415388/199553924-56340543-bac6-415d-a0c0-9b26f370e696.gif)
+
+## This repository would most likely not exist without
+- [godot_terrain_plugin (no license)](https://github.com/Zylann/godot_terrain_plugin) :heart:
