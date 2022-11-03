@@ -5,6 +5,7 @@ using Godot;
 
 namespace GDTerrain {
 
+	[Tool]
 	public partial class TerrainData : Resource {
 
 		public const string DEFAULT_FILENAME = "data";
@@ -99,7 +100,7 @@ namespace GDTerrain {
 			MAP_SPLAT_WEIGHT = 7;
 
 		#region Map Type Info
-		public class MapTypeInfo {
+		public sealed class MapTypeInfo {
 
 			public string name;
 			public string[] shaderParamName;
@@ -350,6 +351,8 @@ namespace GDTerrain {
 		public void SetDefault() {
 			SetDefaultMaps();
 			Resize(DEFAULT_RESOLUTION, true, -Vector2i.One);
+			// TODO: update all textures on rebuild?
+			UpdateTexture(MAP_HEIGHT, 0);//?
 		}
 
 		public TerrainData() : base() {

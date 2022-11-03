@@ -6,13 +6,12 @@ namespace GDTerrain {
 	/// <summary>
 	/// An alternative to MeshInstance3D that does not use scene tree
 	/// </summary>
-	public sealed class DirectMeshInstance {
+	public class DirectMeshInstance {
 
-		private RID _meshInstance;
-		// Keep a reference
-		private Mesh _mesh;
+		protected RID _meshInstance;
 
-		private void ThrowIfNullRID() {
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		protected void ThrowIfNullRID() {
 			if (_meshInstance.Equals(default)) {
 				throw new System.Exception($"[{nameof(DirectMeshInstance)}] Null RID");
 			}
@@ -32,7 +31,7 @@ namespace GDTerrain {
 		}
 		#endregion
 
-		public DirectMeshInstance() {
+		public DirectMeshInstance() : base() {
 			_meshInstance = RenderingServer.InstanceCreate();
 			Visible = true;
 		}
@@ -76,7 +75,6 @@ namespace GDTerrain {
 		public void SetMesh(Mesh value) {
 			ThrowIfNullRID();
 			RenderingServer.InstanceSetBase(_meshInstance, value != null ? value.GetRid() : default);
-			_mesh = value;
 		}
 
 		public void SetMaterial(Material value) {

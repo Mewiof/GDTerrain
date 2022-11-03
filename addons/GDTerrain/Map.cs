@@ -2,7 +2,7 @@
 
 namespace GDTerrain {
 
-	public class Map {
+	public sealed class Map {
 
 		public ImageTexture texture;
 		public Image image;

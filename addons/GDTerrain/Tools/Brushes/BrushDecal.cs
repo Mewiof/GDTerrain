@@ -5,12 +5,12 @@ using Godot;
 
 namespace GDTerrain {
 
-	/// <summary>Shows a cursor over terrain to preview where the brush will paint</summary>
-	public sealed class BrushDecal {
+	[Tool]
+	public partial class BrushDecal : Object {
 
-		private readonly DirectMeshInstance _directMeshInstance = new();
-		private readonly PlaneMesh _mesh = new();
-		private readonly ShaderMaterial _material = new();
+		private readonly DirectMeshInstance _directMeshInstance;
+		private readonly PlaneMesh _mesh;
+		private readonly ShaderMaterial _material;
 
 		private Terrain _targetTerrain;
 		public Terrain TargetTerrain {
@@ -37,21 +37,28 @@ namespace GDTerrain {
 			}
 		}
 
-		public BrushDecal() {
-			_material.Shader = ResourceLoader.Load<Shader>("res://addons/GDTerrain/Tools/Brushes/Shaders/decal.gdshader", null, ResourceLoader.CacheMode.Replace);
-			_directMeshInstance.SetMaterial(_material);
+		public BrushDecal() : base() {
+			_directMeshInstance = new();
+			_mesh = new();
 			_directMeshInstance.SetMesh(_mesh);
+			_material = new() {
+				Shader = ResourceLoader.Load<Shader>("res://addons/GDTerrain/Tools/Brushes/Shaders/decal.gdshader")
+			};
+			_directMeshInstance.SetMaterial(_material);
 		}
 
-		public void SetSize(int value) {
-			_mesh.Size = new(value, value);
-			int sS = value - 1;
-			// do not subdivide too much
-			while (sS > 50) {
-				sS /= 2;
+		public int Size {
+			get => (int)System.MathF.Ceiling(System.MathF.Max(_mesh.Size.x, _mesh.Size.y));//?
+			set {
+				_mesh.Size = new(value, value);
+				int sS = value - 1;
+				// do not subdivide too much
+				while (sS > 25) {
+					sS /= 2;
+				}
+				_mesh.SubdivideWidth = sS;
+				_mesh.SubdivideDepth = sS;
 			}
-			_mesh.SubdivideWidth = sS;
-			_mesh.SubdivideDepth = sS;
 		}
 
 		public void OnTargetTerrainTransformChanged(Transform3D value) {
@@ -61,6 +68,7 @@ namespace GDTerrain {
 			_material.SetShaderParameter("u_terrain_normal_basis", normalBasis);
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void SetPosition(Vector3i value) {
 			TerrainData terrainData = _targetTerrain.Data;
 			if (terrainData != null) {
@@ -94,6 +102,7 @@ namespace GDTerrain {
 		public void UpdateVisibility() {
 			ImageTexture heightmapTexture = GetHeightmapTexture();
 			if (heightmapTexture == null) {
+				//Plugin.DebugLog($"{nameof(BrushDecal)}->{nameof(UpdateVisibility)}->'heightmapTexture == null'");
 				_material.SetShaderParameter("u_terrain_heightmap", default);
 				_directMeshInstance.Visible = false;
 				return;

@@ -3,7 +3,7 @@ using Godot;
 
 namespace GDTerrain {
 
-	public class CellRaycastContext {
+	public sealed class CellRaycastContext {
 
 		public Vector3 beginPos;
 		public Vector3 dir;

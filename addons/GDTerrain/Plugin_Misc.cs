@@ -22,16 +22,16 @@ namespace GDTerrain {
 		}
 
 		private static Script LoadScript(string path) {
-			return ResourceLoader.Load<Script>(BASE_PATH + path, null, ResourceLoader.CacheMode.Replace);
+			return ResourceLoader.Load<Script>(BASE_PATH + path);
 		}
 
 		/// <summary>'Icons/icon_<paramref name="name"/>.svg'</summary>
 		private static Texture2D LoadIcon(string name) {
-			return ResourceLoader.Load<Texture2D>(BASE_PATH + "Icons/icon_" + name + ".svg", null, ResourceLoader.CacheMode.Replace);
+			return ResourceLoader.Load<Texture2D>(BASE_PATH + "Icons/icon_" + name + ".svg");
 		}
 
 		private static Terrain GetTerrainFromObject(Variant o) {
-			if (o.VariantType == Variant.Type.Object && o.AsGodotObject() is Node3D node) {
+			if (o.VariantType == Variant.Type.Object && o.Obj is Node3D node) {
 				if (!node.IsInsideTree()) {
 					return null;
 				}

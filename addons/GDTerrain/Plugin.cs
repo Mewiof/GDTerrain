@@ -8,12 +8,47 @@ namespace GDTerrain {
 	public partial class Plugin : EditorPlugin {
 
 		private Terrain _targetTerrain;
+		private Terrain TargetTerrain {
+			set {
+				if (_targetTerrain == value) {
+					DebugLog($"{nameof(TargetTerrain)}->set->same");
+					return;
+				}
+
+				DebugLog($"{nameof(TargetTerrain)}->set");
+
+				// old
+				if (_targetTerrain != null) {
+					_targetTerrain.TreeExited -= OnTerrainExitedScene;
+				}
+
+				_targetTerrain = value;
+
+				// new
+				if (_targetTerrain != null) {
+					_targetTerrain.TreeExited += OnTerrainExitedScene;
+				}
+
+				// brush decal
+				_brushDecal.TargetTerrain = _targetTerrain;
+
+				UpdateToolbarMenuAvailability();
+			}
+		}
 
 		#region GUI
 		private HBoxContainer _toolbar;
 		private MenuButton _menuButton;
 		private PopupMenu _menuPopup;
 		private PopupMenu _debugMenu;
+
+		#region Toolbar Menu Ids
+		public const int
+			MENU_RESIZE = 0,
+			MENU_BAKE = 1,
+			MENU_UPDATE_EDITOR_COLLIDER = 2,
+			MENU_DEBUG = 3;
+		#endregion
 
 		#region Callbacks
 		private void OnDebugMenuAboutToPopup() {
@@ -56,14 +91,13 @@ namespace GDTerrain {
 
 		private void UpdateToolbarMenuAvailability() {
 			bool available = _targetTerrain != null && _targetTerrain.HasData;
-			PopupMenu menuPopup = _menuButton.GetPopup();
-			for (int i = 0; i < menuPopup.ItemCount; i++) {
+			for (int i = 0; i < _menuPopup.ItemCount; i++) {
 				if (available) {
-					menuPopup.SetItemDisabled(i, false);
-					menuPopup.SetItemTooltip(i, string.Empty);
+					_menuPopup.SetItemDisabled(i, false);
+					_menuPopup.SetItemTooltip(i, string.Empty);
 				} else {
-					menuPopup.SetItemDisabled(i, true);
-					menuPopup.SetItemTooltip(i, "Terrain has no data");
+					_menuPopup.SetItemDisabled(i, true);
+					_menuPopup.SetItemTooltip(i, "Terrain has no data");
 				}
 			}
 		}
@@ -83,15 +117,7 @@ namespace GDTerrain {
 		}
 		#endregion
 
-		private readonly BrushDecal _brushDecal = new();
-
-		#region Toolbar Menu Ids
-		public const int
-			MENU_RESIZE = 0,
-			MENU_BAKE = 1,
-			MENU_UPDATE_EDITOR_COLLIDER = 2,
-			MENU_DEBUG = 3;
-		#endregion
+		private BrushDecal _brushDecal;
 
 		public override void _EnterTree() {
 			DebugLog($"{nameof(GDTerrain)}->{nameof(_EnterTree)}");
@@ -103,13 +129,14 @@ namespace GDTerrain {
 			// GUI
 			InitGUI();
 
-			_brushDecal.SetSize(20);
+			_brushDecal = (BrushDecal)ResourceLoader.Load<CSharpScript>(BASE_PATH + "Tools/Brushes/BrushDecal.cs").New().Obj;
+			_brushDecal.Size = 20;
 		}
 
 		public override void _ExitTree() {
 			DebugLog($"{nameof(GDTerrain)}->{nameof(_ExitTree)}");
 
-			SetTargetTerrain(null);
+			TargetTerrain = null;
 
 			// GUI
 			DisposeGUI();
@@ -159,33 +186,12 @@ namespace GDTerrain {
 		#region Target Terrain
 		private void OnTerrainExitedScene() {
 			DebugLog($"{nameof(OnTerrainExitedScene)}");
-			SetTargetTerrain(null);
-		}
-
-		public void SetTargetTerrain(Terrain value) {
-			DebugLog($"{nameof(SetTargetTerrain)}");
-
-			// old
-			if (_targetTerrain != null) {
-				_targetTerrain.TreeExited -= OnTerrainExitedScene;
-			}
-
-			_targetTerrain = value;
-
-			// new
-			if (_targetTerrain != null) {
-				_targetTerrain.TreeExited += OnTerrainExitedScene;
-			}
-
-			// brush decal
-			_brushDecal.TargetTerrain = _targetTerrain;
-
-			UpdateToolbarMenuAvailability();
+			TargetTerrain = null;
 		}
 		#endregion
 
 		public override void _Edit(Variant @object) {
-			SetTargetTerrain(GetTerrainFromObject(@object));
+			TargetTerrain = GetTerrainFromObject(@object);
 		}
 
 		public override void _MakeVisible(bool value) {
@@ -195,7 +201,7 @@ namespace GDTerrain {
 			_brushDecal.UpdateVisibility();
 
 			if (!value) {
-				SetTargetTerrain(null);
+				TargetTerrain = null;
 			}
 		}
 	}

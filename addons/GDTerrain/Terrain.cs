@@ -7,7 +7,7 @@ namespace GDTerrain {
 	[Tool]
 	public partial class Terrain : Node3D {
 
-		private const string _SHADER_DEFAULT = "Default";
+		//private const string _SHADER_DEFAULT = "Default";
 
 		private readonly Mesher _mesher;
 

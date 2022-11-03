@@ -8,7 +8,6 @@ namespace GDTerrain.Native {
 		public int firstChild = QuadTreeLOD.NO_CHILDREN;
 		public int originX;
 		public int originY;
-
 		private Chunk _data;
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -21,8 +20,7 @@ namespace GDTerrain.Native {
 			firstChild = QuadTreeLOD.NO_CHILDREN;
 			originX = 0;
 			originY = 0;
-			// same as ClearData()
-			_data = null;
+			ClearData();
 		}
 
 		public bool HasChildren {

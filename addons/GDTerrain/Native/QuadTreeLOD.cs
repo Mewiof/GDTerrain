@@ -38,7 +38,7 @@ namespace GDTerrain.Native {
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static int GetLODFactor(int value) {
+		public static int GetLODFactor(int value) {//?
 			return 1 << value;
 		}
 

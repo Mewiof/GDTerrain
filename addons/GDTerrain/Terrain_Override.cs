@@ -12,10 +12,10 @@ namespace GDTerrain {
 					break;
 				case NotificationEnterWorld:
 					World3D world3D = GetWorld3d();
-					ForAllChunks(item => item.EnterWorld(world3D));
+					ForAllChunks(item => item.SetWorld(world3D));
 					break;
 				case NotificationExitWorld:
-					ForAllChunks(item => item.ExitWorld());
+					ForAllChunks(item => item.SetWorld(null));
 					break;
 				case NotificationTransformChanged:
 					OnTransformChanged();

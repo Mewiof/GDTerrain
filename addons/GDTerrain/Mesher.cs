@@ -5,7 +5,7 @@ using Godot;
 
 namespace GDTerrain {
 
-	public class Mesher {
+	public sealed class Mesher {
 
 		public const int
 			SEAM_LEFT = 1,
@@ -23,10 +23,6 @@ namespace GDTerrain {
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private int[] MakeIndices(int chunkSizeX, int chunkSizeY, int seams) {
 			_makeIndicesResultCache.Clear();
-
-			/*if (seams != 0 && (chunkSizeX % 2 != 0 || chunkSizeY % 2 != 0)) {
-				throw new ArgumentException("'chunkSizeX % 2 != 0 || chunkSizeY % 2 != 0'");
-			}*/
 
 			int regOriginX = 0;
 			int regOriginY = 0;
@@ -71,8 +67,7 @@ namespace GDTerrain {
 					 * 00---10
 					 */
 
-					// flips the pattern to make the geometry orientation-free
-					// not sure if it helps in any way though
+					// flips the pattern to make geometry free from orientation
 					bool flip = (x + regOriginX + ((y + regOriginY) % 2)) % 2 != 0;
 
 					if (flip) {

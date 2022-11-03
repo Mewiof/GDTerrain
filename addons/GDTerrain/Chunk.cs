@@ -3,29 +3,18 @@ using Godot;
 
 namespace GDTerrain {
 
-	public sealed class Chunk {
+	public sealed class Chunk : DirectMeshInstance {
 
-		private readonly int _cellOriginX;
-		private readonly int _cellOriginY;
-
-		private RID _meshInstance;
 		private Transform3D _localTransform;
 
-		public int CellOriginX => _cellOriginX;
-		public int CellOriginY => _cellOriginY;
+		public int CellOriginX {
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			get;
+		}
 
-		private bool _visible;
-		public bool Visible {
+		public int CellOriginY {
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			get => _visible;
-			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			set {
-				if (_meshInstance.Equals(default)) {
-					throw new System.Exception("'_meshInstance.Equals(default)'");
-				}
-				RenderingServer.InstanceSetVisible(_meshInstance, value);
-				_visible = value;
-			}
+			get;
 		}
 
 		public bool Active {
@@ -34,6 +23,7 @@ namespace GDTerrain {
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			set;
 		}
+
 		public bool PendingUpdate {
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			get;
@@ -41,104 +31,35 @@ namespace GDTerrain {
 			set;
 		}
 
-		public Chunk(Node3D parent, int cellX, int cellY, Material material) {
-			_cellOriginX = cellX;
-			_cellOriginY = cellY;
+		public Chunk(Node3D parent, int cellX, int cellY, Material material) : base() {
+			_localTransform = new(Basis.Identity, new(cellX, 0f, cellY));
 
-			_meshInstance = RenderingServer.InstanceCreate();
-			_localTransform = new(Basis.Identity, new(_cellOriginX, 0f, _cellOriginY));
+			CellOriginX = cellX;
+			CellOriginY = cellY;
 
-			if (material != null) {
-				RenderingServer.InstanceGeometrySetMaterialOverride(_meshInstance, material.GetRid());
-			}
-
-			World3D world = parent.GetWorld3d();
-			if (world != null) {
-				RenderingServer.InstanceSetScenario(_meshInstance, world.Scenario);
-			}
-
-			Visible = true;
+			SetMaterial(material);
+			SetWorld(parent.GetWorld3d());
 
 			Active = true;
 			PendingUpdate = false;
-		}
-
-		public void TryFreeRID() {
-			if (_meshInstance.Equals(default)) {
-				return;
-			}
-
-			RenderingServer.FreeRid(_meshInstance);
-			_meshInstance = default;
 		}
 
 		~Chunk() {
 			TryFreeRID();
 		}
 
-		public void EnterWorld(World3D world) {
-			if (_meshInstance.Equals(default)) {
-				throw new System.Exception("'_meshInstance.Equals(default)'");
-			}
-
-			RenderingServer.InstanceSetScenario(_meshInstance, world.Scenario);
-		}
-
-		public void ExitWorld() {
-			if (_meshInstance.Equals(default)) {
-				throw new System.Exception("'_meshInstance.Equals(default)'");
-			}
-
-			RenderingServer.InstanceSetScenario(_meshInstance, default);
-		}
-
-		public void OnParentTransformChanged(Transform3D parentTransform) {
-			if (_meshInstance.Equals(default)) {
-				throw new System.Exception("'_meshInstance.Equals(default)'");
-			}
-
-			Transform3D worldTransform = parentTransform * _localTransform;
-			RenderingServer.InstanceSetTransform(_meshInstance, worldTransform);
-		}
-
-		public void SetMesh(Mesh value) {
-			if (_meshInstance.Equals(default)) {
-				throw new System.Exception("'_meshInstance.Equals(default)'");
-			}
-
-			RenderingServer.InstanceSetBase(_meshInstance, value != null ? value.GetRid() : default);
-		}
-
-		public void SetMaterial(Material value) {
-			if (_meshInstance.Equals(default)) {
-				throw new System.Exception("'_meshInstance.Equals(default)'");
-			}
-
-			RenderingServer.InstanceGeometrySetMaterialOverride(
-				_meshInstance, value != null ? value.GetRid() : default);
-		}
-
-		public void SetAABB(AABB value) {
-			if (_meshInstance.Equals(default)) {
-				throw new System.Exception("'_meshInstance.Equals(default)'");
-			}
-
-			RenderingServer.InstanceSetCustomAabb(_meshInstance, value);
+		public void OnParentTransformChanged(Transform3D value) {
+			Transform3D worldTransform = value * _localTransform;
+			SetTransform(worldTransform);
 		}
 
 		public void SetRenderLayerMask(uint value) {
-			if (_meshInstance.Equals(default)) {
-				throw new System.Exception("'_meshInstance.Equals(default)'");
-			}
-
+			ThrowIfNullRID();
 			RenderingServer.InstanceSetLayerMask(_meshInstance, value);
 		}
 
 		public void SetCastShadowsSetting(RenderingServer.ShadowCastingSetting value) {
-			if (_meshInstance.Equals(default)) {
-				throw new System.Exception("'_meshInstance.Equals(default)'");
-			}
-
+			ThrowIfNullRID();
 			RenderingServer.InstanceGeometrySetCastShadowsSetting(_meshInstance, value);
 		}
 	}
