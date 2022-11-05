@@ -1,4 +1,5 @@
-﻿
+﻿#if TOOLS
+
 /* Core logic for painting textures using shaders, with undo/redo support.
  * The operations are delayed, so results are only available in next frame.
  * This does not implement user interface or brush behaviour, only rendering logic
@@ -11,11 +12,12 @@ using Godot;
 
 namespace GDTerrain {
 
-	public partial class Painter : Node {
+	[Tool]
+	public partial class Painter : Node3D {
 
 		public const int UNDO_CHUNK_SIZE = 64;
 
-		private static readonly Shader _noBlendShader = ResourceLoader.Load<Shader>("./Shaders/no_blend.gdshader");
+		private static readonly Shader _noBlendShader = Plugin.LoadShader("Tools/Brush/Shaders/no_blend.gdshader");
 
 		// Common parameters
 		public const string SHADER_PARAM_SRC_TEXTURE = "u_src_texture";
@@ -292,3 +294,4 @@ namespace GDTerrain {
 		}
 	}
 }
+#endif

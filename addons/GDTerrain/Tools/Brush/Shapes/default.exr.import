@@ -1,0 +1,14 @@
+[remap]
+
+importer="image"
+type="Image"
+uid="uid://s0paiud36qcn"
+path="res://.godot/imported/default.exr-85a938168aa55125136bda36593ac8e1.image"
+
+[deps]
+
+source_file="res://addons/GDTerrain/Tools/Brush/Shapes/default.exr"
+dest_files=["res://.godot/imported/default.exr-85a938168aa55125136bda36593ac8e1.image"]
+
+[params]
+

@@ -1,12 +1,14 @@
-﻿using System;
+﻿#if TOOLS
+
+using System;
 using System.Collections.Generic;
 using Godot;
 
 namespace GDTerrain {
 
-	public class Brush {
+	public sealed class Brush {
 
-		public const string SHAPES_DIR = "./Shapes";
+		public const string SHAPES_DIR = Plugin.BASE_PATH + "Tools/Brush/Shapes";
 		public const string DEFAULT_SHAPE_FILE_PATH = SHAPES_DIR + "/default.exr";
 
 		public const int MAX_SIZE_FOR_SLIDERS = 500;
@@ -163,3 +165,4 @@ namespace GDTerrain {
 		}
 	}
 }
+#endif

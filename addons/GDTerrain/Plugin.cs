@@ -29,6 +29,8 @@ namespace GDTerrain {
 					_targetTerrain.TreeExited += OnTerrainExitedScene;
 				}
 
+				_inspector.SetTargetTerrain(_targetTerrain);
+				_terrainPainter.SetTargetTerrain(_targetTerrain);
 				// brush decal
 				_brushDecal.TargetTerrain = _targetTerrain;
 
@@ -37,6 +39,7 @@ namespace GDTerrain {
 		}
 
 		#region GUI
+		private Inspector _inspector;
 		private HBoxContainer _toolbar;
 		private MenuButton _menuButton;
 		private PopupMenu _menuPopup;
@@ -103,6 +106,16 @@ namespace GDTerrain {
 		}
 
 		private void InitGUI() {
+			_inspector = ResourceLoader.Load<PackedScene>(BASE_PATH + "Tools/inspector.tscn").Instantiate<Inspector>();
+			//Util.ApplyDPIScale(_inspector, dPIScale);
+			_inspector.Visible = false;
+			AddControlToContainer(CustomControlContainer.SpatialEditorBottom, _inspector);
+			_inspector.SetTerrainPainter(_terrainPainter);
+			//_inspector.CallDeferred("SetTerrainPainter", _terrainPainter);
+			//_inspector.CallDeferred("SetupDialogs", baseControl);
+			//_inspector.SetUndoRedo(GetUndoRedo());
+			//_inspector.SetImageCache(_imageCache);
+
 			InitToolbar();
 		}
 
@@ -114,9 +127,14 @@ namespace GDTerrain {
 
 		private void DisposeGUI() {
 			DisposeToolbar();
+
+			RemoveControlFromContainer(CustomControlContainer.SpatialEditorBottom, _inspector);
+			_inspector.QueueFree();
+			_inspector = null;
 		}
 		#endregion
 
+		private TerrainPainter _terrainPainter;
 		private BrushDecal _brushDecal;
 
 		public override void _EnterTree() {
@@ -126,11 +144,18 @@ namespace GDTerrain {
 			AddCustomType(nameof(Terrain), nameof(Node3D), LoadScript("Terrain.cs"), LoadIcon("heightmap_node"));
 			AddCustomType(nameof(TerrainData), nameof(Resource), LoadScript("TerrainData.cs"), LoadIcon("heightmap_data"));
 
+			_terrainPainter = new() {
+				BrushSize = 20
+			};
+			_terrainPainter.Brush.sizeChanged += value => _brushDecal.Size = value;
+			AddChild(_terrainPainter);
+
+			_brushDecal = new() {
+				Size = _terrainPainter.BrushSize
+			};
+
 			// GUI
 			InitGUI();
-
-			_brushDecal = (BrushDecal)ResourceLoader.Load<CSharpScript>(BASE_PATH + "Tools/Brushes/BrushDecal.cs").New().Obj;
-			_brushDecal.Size = 20;
 		}
 
 		public override void _ExitTree() {
@@ -151,20 +176,29 @@ namespace GDTerrain {
 		}
 
 		public override long _Forward3dGuiInput(Camera3D camera, InputEvent @event) {
+			long afterGUIInput = (long)AfterGUIInput.Pass;
+
 			if (_targetTerrain == null || !_targetTerrain.HasData) {
-				return (long)AfterGUIInput.Pass;
+				return afterGUIInput;
 			}
 
 			if (@event is InputEventMouseMotion mouse) {
 				Vector2i? gridPos = GetGridPos(mouse.Position, camera);
 				if (gridPos.HasValue) {
 					_brushDecal.SetPosition(new(gridPos.Value.x, 0, gridPos.Value.y));
+
+					if (Input.IsMouseButtonPressed(MouseButton.Left)) {
+						_ = _terrainPainter.TryPaint((Vector2)gridPos, mouse.Pressure);
+						afterGUIInput = (long)AfterGUIInput.Stop;
+					}
 				}
+				_brushDecal.UpdateVisibility();//?
 			} else {
 				_targetTerrain.UpdateViewerPosition(camera);
+				//_inspector.SetCameraTransform(camera.GlobalTransform);
 			}
 
-			return (long)AfterGUIInput.Pass;
+			return afterGUIInput;
 		}
 
 		/// <summary>Prev frame</summary>
@@ -195,6 +229,7 @@ namespace GDTerrain {
 		}
 
 		public override void _MakeVisible(bool value) {
+			_inspector.Visible = value;
 			_toolbar.Visible = value;
 
 			// brush decal

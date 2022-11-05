@@ -1,19 +1,34 @@
-﻿using System.Collections.Generic;
+﻿#if TOOLS
+
+using System.Collections.Generic;
 using Godot;
 
 namespace GDTerrain {
 
-	public partial class TerrainPainter : Node {
+	[Tool]
+	public partial class TerrainPainter : Node3D {
 
-		private static readonly Shader _raiseShader = ResourceLoader.Load<Shader>("./Shaders/raise.shader");
+		private static readonly Shader _raiseShader = Plugin.LoadShader("Tools/Brush/Shaders/raise.gdshader");
 
-		public const int MODE_RAISE = 0;
+		public enum Mode {
+			Raise,
+			Lower,
+			Smooth,
+			Flatten,
+			Splat,
+			Color,
+			Mask,
+			Detail,
+			Level,
+			Erode
+		}
+
+		public Mode mode;
 
 		private readonly List<Painter> _painters = new();
-		private Brush _brush = new();
+		private readonly Brush _brush = new();
 		public Color color = new(1f, 0f, 0f, 1f);
 		public bool maskFlag;
-		public int mode = MODE_RAISE;
 		#region Modified Maps
 		public struct ModifiedMap {
 
@@ -149,7 +164,7 @@ namespace GDTerrain {
 			_modifiedMaps.Clear();
 
 			switch (mode) {
-				case MODE_RAISE:
+				case Mode.Raise:
 					PaintHeight(terrainData, position, 1f);
 					break;
 			}
@@ -171,3 +186,4 @@ namespace GDTerrain {
 		}
 	}
 }
+#endif

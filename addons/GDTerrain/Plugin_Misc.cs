@@ -30,6 +30,10 @@ namespace GDTerrain {
 			return ResourceLoader.Load<Texture2D>(BASE_PATH + "Icons/icon_" + name + ".svg");
 		}
 
+		public static Shader LoadShader(string path) {
+			return ResourceLoader.Load<Shader>(BASE_PATH + path);
+		}
+
 		private static Terrain GetTerrainFromObject(Variant o) {
 			if (o.VariantType == Variant.Type.Object && o.Obj is Node3D node) {
 				if (!node.IsInsideTree()) {

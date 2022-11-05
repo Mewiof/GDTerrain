@@ -42,7 +42,7 @@ namespace GDTerrain {
 			_mesh = new();
 			_directMeshInstance.SetMesh(_mesh);
 			_material = new() {
-				Shader = ResourceLoader.Load<Shader>("res://addons/GDTerrain/Tools/Brushes/Shaders/decal.gdshader")
+				Shader = ResourceLoader.Load<Shader>("res://addons/GDTerrain/Tools/Brush/Shaders/decal.gdshader")
 			};
 			_directMeshInstance.SetMaterial(_material);
 		}
