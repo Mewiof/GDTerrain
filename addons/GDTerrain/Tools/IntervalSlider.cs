@@ -45,15 +45,6 @@ namespace GDTerrain {
 		#region Values
 		private readonly float[] _values = new float[2];
 
-		public float ValueA {
-			get => _values[(int)ValueIndex.A];
-			set => _values[(int)ValueIndex.A] = value;
-		}
-		public float ValueB {
-			get => _values[(int)ValueIndex.B];
-			set => _values[(int)ValueIndex.B] = value;
-		}
-
 		public float GetValue(ValueIndex valueIndex) {
 			return _values[(int)valueIndex];
 		}
@@ -78,8 +69,17 @@ namespace GDTerrain {
 
 			_values[(int)valueIndex] = value;
 			if (notifyChange) {
-				EmitSignal(nameof(ChangedEventHandler));
+				_ = EmitSignal(nameof(Changed));
 			}
+		}
+
+		public float ValueA {
+			get => GetValue(ValueIndex.A);
+			set => SetValue(ValueIndex.A, value, false);
+		}
+		public float ValueB {
+			get => GetValue(ValueIndex.B);
+			set => SetValue(ValueIndex.B, value, false);
 		}
 		#endregion
 
