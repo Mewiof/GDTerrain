@@ -4,6 +4,8 @@
 
 !!! WIP ~ Not ready for use
 
+![Untitled](https://user-images.githubusercontent.com/115415388/200151360-5ed2db1f-036d-49b4-99cf-8a7dc6320781.png)
+
 ###### Planned features:
 - [x] Chunking/LOD
 - [ ] Shape editing/texture drawing tools `<-- (CURRENT)`
