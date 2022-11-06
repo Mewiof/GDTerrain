@@ -1,4 +1,4 @@
-## GTerrain
+## GDTerrain
 
 > [:warning:] Conceived as an experimental addon for my experimental MMO project. I don't guarantee continuous repository support or avoiding breaking changes. If you are looking forward to seeing a stable version, you can [support](https://www.patreon.com/mewiof) me (Patreon).
 
