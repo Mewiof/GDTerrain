@@ -1,8 +1,7 @@
 ﻿#if TOOLS
 
 /* Core logic for painting textures using shaders, with undo/redo support.
- * The operations are delayed, so results are only available in next frame.
- * This does not implement user interface or brush behaviour, only rendering logic
+ * Operations are delayed, so results are only available in next frame
  */
 
 using System;
@@ -24,7 +23,8 @@ namespace GDTerrain {
 		public const string SHADER_PARAM_SRC_RECT = "u_src_rect";
 		public const string SHADER_PARAM_OPACITY = "u_opacity";
 
-		public Action<Rect2i> textureRegionChanged;
+		[Signal]
+		public delegate void TextureRegionChangedEventHandler(Rect2i rect);
 
 		private SubViewport _subViewport;
 		private Sprite2D _viewportBackgroundSprite;
@@ -198,7 +198,7 @@ namespace GDTerrain {
 					MarkModifiedChunks(destX, destY, sourceW, sourceH);
 					// TODO: partial texture update has not yet been implemented, so for now we are updating the full texture
 					RenderingServer.Texture2dUpdate(_texture.GetRid(), data, 0);
-					textureRegionChanged.Invoke(new(destX, destY, sourceW, sourceH));
+					_ = EmitSignal(nameof(TextureRegionChanged), new Rect2i(destX, destY, sourceW, sourceH));
 				}
 			}
 

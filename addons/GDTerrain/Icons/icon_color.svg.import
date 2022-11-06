@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cyxs2ldj883q0"
-path="res://.godot/imported/icon_heightmap_node.svg-4bdfa55e4c22e69ebd4394f23442e62f.ctex"
+uid="uid://c8fp7m704om15"
+path="res://.godot/imported/icon_color.svg-6a75229784b18bcf8c4dca2cdb3be0aa.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://addons/GDTerrain/Icons/icon_heightmap_node.svg"
-dest_files=["res://.godot/imported/icon_heightmap_node.svg-4bdfa55e4c22e69ebd4394f23442e62f.ctex"]
+source_file="res://addons/GDTerrain/Icons/icon_color.svg"
+dest_files=["res://.godot/imported/icon_color.svg-6a75229784b18bcf8c4dca2cdb3be0aa.ctex"]
 
 [params]
 

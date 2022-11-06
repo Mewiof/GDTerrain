@@ -4,15 +4,14 @@
 [ext_resource type="Script" path="res://addons/GDTerrain/Tools/Inspector.cs" id="1_p6pdd"]
 
 [node name="Inspector" type="Control"]
-custom_minimum_size = Vector2(0, 128)
+custom_minimum_size = Vector2(0, 140)
 layout_mode = 3
 anchors_preset = 0
 offset_right = 832.0
-offset_bottom = 128.0
+offset_bottom = 140.0
 script = ExtResource("1_p6pdd")
 
 [node name="HSplitContainer" type="HSplitContainer" parent="."]
-layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -24,13 +23,13 @@ grow_vertical = 2
 split_offset = 64
 
 [node name="BrushEditor" parent="HSplitContainer" instance=ExtResource("1_hxyji")]
-custom_minimum_size = Vector2(416, 0)
-layout_mode = 2
-offset_bottom = 124.0
+custom_minimum_size = Vector2(448, 0)
+offset_right = 448.0
+offset_bottom = 136.0
 
 [node name="Empty" type="Control" parent="HSplitContainer"]
-layout_mode = 2
+layout_mode = 3
 anchors_preset = 0
-offset_left = 428.0
+offset_left = 460.0
 offset_right = 824.0
-offset_bottom = 124.0
+offset_bottom = 136.0

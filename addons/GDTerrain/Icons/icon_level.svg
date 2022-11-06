@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="64" height="64" viewBox="0 0 64 64">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #e0e0e0;
+        fill-rule: evenodd;
+      }
+    </style>
+  </defs>
+  <image width="64" height="64" xlink:href="data:img/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAqElEQVR4nO3QAQ2AQADDwIF/z09Q0SbfU9Dt2XZ2sffm8b8OEDSgOkDQgOoAQQOqAwQNqA4QNKA6QNCA6gBBA6oDBA2oDhA0oDpA0IDqAEEDqgMEDagOEDSgOkDQgOoAQQOqAwQNqA4QNKA6QNCA6gBBA6oDBA2oDhA0oDpA0IDqAEEDqgMEDagOEDSgOkDQgOoAQQOqAwQNqA4QNKA6QNCA6gBBA2fbB1C0AX8VOkUcAAAAAElFTkSuQmCC"/>
+  <path class="cls-1" d="M4,60V23s13-.063,27.976,9.992C46.291,42.6,60,43,60,43V60H4Z"/>
+  <path class="cls-1" d="M25,12S40.054,28.174,46,27c11.4-2.251,11.14-13.723,3-14a6.041,6.041,0,0,0-6,4s-1.677,2.214-8,0A46.816,46.816,0,0,1,25,12Z"/>
+</svg>

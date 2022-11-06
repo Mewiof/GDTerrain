@@ -21,6 +21,15 @@ namespace GDTerrain {
 		public void SetTargetTerrain(Terrain value) {
 		}
 
+		public void SetUndoRedo(EditorUndoRedoManager value) {
+		}
+
+		public void SetImageCache(Image value) {
+		}
+
+		public void SetCameraTransform(Transform3D value) {
+		}
+
 		public void SetTerrainPainter(TerrainPainter value) {
 			_brushEditor.SetTerrainPainter(value);
 		}

@@ -1,5 +1,6 @@
 #if TOOLS
 
+using System.Collections.Generic;
 using Godot;
 
 namespace GDTerrain {
@@ -30,9 +31,9 @@ namespace GDTerrain {
 				}
 
 				_inspector.SetTargetTerrain(_targetTerrain);
-				_terrainPainter.SetTargetTerrain(_targetTerrain);
+				TerrainPainter.SetTargetTerrain(_targetTerrain);
 				// brush decal
-				_brushDecal.TargetTerrain = _targetTerrain;
+				BrushDecal.TargetTerrain = _targetTerrain;
 
 				UpdateToolbarMenuAvailability();
 			}
@@ -62,7 +63,14 @@ namespace GDTerrain {
 
 		private void OnMenuIdPressed(long id) {
 		}
+
+		private void OnModeSelected(TerrainPainter.Mode mode) {
+			TerrainPainter.mode = mode;
+			_inspector.SetBrushEditorPaintMode(mode);
+		}
 		#endregion
+
+		private readonly List<Button> _modeButtons = new();
 
 		private void InitToolbar() {
 			_toolbar = new();
@@ -90,6 +98,33 @@ namespace GDTerrain {
 			_toolbar.AddChild(_menuButton);
 
 			_toolbar.AddChild(new VSeparator());
+
+			ButtonGroup modeButtonGroup = new();
+
+			static Texture2D GetModeButtonIcon(TerrainPainter.Mode mode) {
+				return LoadIcon(mode.ToString().ToLower());
+			}
+
+			foreach (TerrainPainter.Mode mode in (TerrainPainter.Mode[])System.Enum.GetValues(typeof(TerrainPainter.Mode))) {
+				Button button = new() {
+					Icon = GetModeButtonIcon(mode),
+					TooltipText = mode.ToString(),
+					ToggleMode = true,
+					ButtonGroup = modeButtonGroup,
+					CustomMinimumSize = new(28f, 28f),
+					IconAlignment = HorizontalAlignment.Center,
+					ExpandIcon = true,
+					Flat = true
+				};
+
+				if (mode == TerrainPainter.mode) {
+					button.ButtonPressed = true;
+				}
+
+				button.Pressed += () => OnModeSelected(mode);
+				_toolbar.AddChild(button);
+				_modeButtons.Add(button);
+			}
 		}
 
 		private void UpdateToolbarMenuAvailability() {
@@ -110,10 +145,9 @@ namespace GDTerrain {
 			//Util.ApplyDPIScale(_inspector, dPIScale);
 			_inspector.Visible = false;
 			AddControlToContainer(CustomControlContainer.SpatialEditorBottom, _inspector);
-			_inspector.SetTerrainPainter(_terrainPainter);
-			//_inspector.CallDeferred("SetTerrainPainter", _terrainPainter);
-			//_inspector.CallDeferred("SetupDialogs", baseControl);
-			//_inspector.SetUndoRedo(GetUndoRedo());
+			_inspector.SetTerrainPainter(TerrainPainter);
+			//_inspector.SetupDialogs(baseControl);
+			_inspector.SetUndoRedo(GetUndoRedo());
 			//_inspector.SetImageCache(_imageCache);
 
 			InitToolbar();
@@ -134,8 +168,14 @@ namespace GDTerrain {
 		}
 		#endregion
 
-		private TerrainPainter _terrainPainter;
-		private BrushDecal _brushDecal;
+		private TerrainPainter TerrainPainter { get; set; }
+		private BrushDecal BrushDecal { get; set; }
+		private bool _mousePressed;
+		private bool _pendingPaintCommit;
+
+		private void OnBrushSizeChanged(int value) {
+			BrushDecal.Size = value;
+		}
 
 		public override void _EnterTree() {
 			DebugLog($"{nameof(GDTerrain)}->{nameof(_EnterTree)}");
@@ -144,14 +184,14 @@ namespace GDTerrain {
 			AddCustomType(nameof(Terrain), nameof(Node3D), LoadScript("Terrain.cs"), LoadIcon("heightmap_node"));
 			AddCustomType(nameof(TerrainData), nameof(Resource), LoadScript("TerrainData.cs"), LoadIcon("heightmap_data"));
 
-			_terrainPainter = new() {
-				BrushSize = 20
+			TerrainPainter = new() {
+				BrushSize = 5
 			};
-			_terrainPainter.Brush.sizeChanged += value => _brushDecal.Size = value;
-			AddChild(_terrainPainter);
+			TerrainPainter.Brush.SizeChanged += OnBrushSizeChanged;
+			AddChild(TerrainPainter);
 
-			_brushDecal = new() {
-				Size = _terrainPainter.BrushSize
+			BrushDecal = new() {
+				Size = TerrainPainter.BrushSize
 			};
 
 			// GUI
@@ -185,17 +225,17 @@ namespace GDTerrain {
 			if (@event is InputEventMouseMotion mouse) {
 				Vector2i? gridPos = GetGridPos(mouse.Position, camera);
 				if (gridPos.HasValue) {
-					_brushDecal.SetPosition(new(gridPos.Value.x, 0, gridPos.Value.y));
+					BrushDecal.SetPosition(new(gridPos.Value.x, 0, gridPos.Value.y));
 
 					if (Input.IsMouseButtonPressed(MouseButton.Left)) {
-						_ = _terrainPainter.TryPaint((Vector2)gridPos, mouse.Pressure);
+						_ = TerrainPainter.TryPaint((Vector2)gridPos, mouse.Pressure);
 						afterGUIInput = (long)AfterGUIInput.Stop;
 					}
 				}
-				_brushDecal.UpdateVisibility();//?
+				BrushDecal.UpdateVisibility();//?
 			} else {
 				_targetTerrain.UpdateViewerPosition(camera);
-				//_inspector.SetCameraTransform(camera.GlobalTransform);
+				_inspector.SetCameraTransform(camera.GlobalTransform);
 			}
 
 			return afterGUIInput;
@@ -233,7 +273,7 @@ namespace GDTerrain {
 			_toolbar.Visible = value;
 
 			// brush decal
-			_brushDecal.UpdateVisibility();
+			BrushDecal.UpdateVisibility();
 
 			if (!value) {
 				TargetTerrain = null;

@@ -14,16 +14,16 @@ namespace GDTerrain {
 			Raise,
 			Lower,
 			Smooth,
+			Level,
 			Flatten,
+			Erode,
 			Splat,
 			Color,
-			Mask,
 			Detail,
-			Level,
-			Erode
+			Mask
 		}
 
-		public Mode mode;
+		public Mode mode = Mode.Raise;
 
 		private readonly List<Painter> _painters = new();
 		private readonly Brush _brush = new();
@@ -105,7 +105,7 @@ namespace GDTerrain {
 					// name for debugging
 					Name = nameof(Painter) + i
 				};
-				painter.textureRegionChanged += rect => OnPainterTextureRegionChanged(rect, i);
+				painter.TextureRegionChanged += rect => OnPainterTextureRegionChanged(rect, i);//?
 				AddChild(painter);
 				_painters.Add(painter);
 			}

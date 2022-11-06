@@ -6,7 +6,8 @@ using Godot;
 
 namespace GDTerrain {
 
-	public sealed class Brush {
+	[Tool]
+	public partial class Brush : Godot.Object {
 
 		public const string SHAPES_DIR = Plugin.BASE_PATH + "Tools/Brush/Shapes";
 		public const string DEFAULT_SHAPE_FILE_PATH = SHAPES_DIR + "/default.exr";
@@ -14,9 +15,10 @@ namespace GDTerrain {
 		public const int MAX_SIZE_FOR_SLIDERS = 500;
 		public const int MAX_SIZE = 4000;//?
 
-		/// <summary>New size</summary>
-		public Action<int> sizeChanged;
-		public Action shapesChanged;
+		[Signal]
+		public delegate void SizeChangedEventHandler(int newSize);
+		[Signal]
+		public delegate void ShapesChangedEventHandler();
 
 		#region Size
 		private int _size = 32;
@@ -28,7 +30,7 @@ namespace GDTerrain {
 				}
 
 				_size = value;
-				sizeChanged?.Invoke(_size);//?
+				_ = EmitSignal(nameof(SizeChanged), _size);
 			}
 		}
 		#endregion
@@ -95,7 +97,7 @@ namespace GDTerrain {
 				if (_shapeIndex >= _shapes.Length) {
 					_shapeIndex = _shapes.Length - 1;
 				}
-				shapesChanged?.Invoke();//?
+				_ = EmitSignal(nameof(ShapesChanged));
 			}
 		}
 		#endregion

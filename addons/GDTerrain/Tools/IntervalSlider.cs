@@ -71,6 +71,7 @@ namespace GDTerrain {
 			if (notifyChange) {
 				_ = EmitSignal(nameof(Changed));
 			}
+			QueueRedraw();
 		}
 
 		public float ValueA {
@@ -119,6 +120,20 @@ namespace GDTerrain {
 		}
 		#endregion
 
+		[Export]
+		private Color _backgroundColor = new(.1f, .1f, .1f);
+		[Export]
+		private Color _intervalColor = new(.4f, .4f, .4f);
+		[Export]
+		private Color _grabberColor = new(.8f, .8f, .8f);
+
+		public override void _Ready() {
+			if (ValueA == 0f && ValueB == 0f) {//?
+				ValueA = Min;
+				ValueB = Max;
+			}
+		}
+
 		public override void _GuiInput(InputEvent @event) {
 			if (@event is InputEventMouseButton mouseButton) {
 				if (mouseButton.ButtonIndex == MouseButton.Left) {
@@ -139,9 +154,6 @@ namespace GDTerrain {
 		public override void _Draw() {
 			int grabberWidth = 4;
 			float backgroundVMargin = 0f;
-			Color grabberColor = new(.8f, .8f, .8f);
-			Color intervalColor = new(.4f, .4f, .4f);
-			Color backgroundColor = new(.1f, .1f, .1f);
 
 			Rect2 controlRect = new(new(), Size);
 
@@ -150,7 +162,7 @@ namespace GDTerrain {
 				controlRect.Position.y + backgroundVMargin,
 				controlRect.Size.x,
 				controlRect.Size.y - (2 * backgroundVMargin));
-			DrawRect(backgroundRect, backgroundColor);
+			DrawRect(backgroundRect, _backgroundColor);
 
 			Rect2 foregroundRect = controlRect.Grow(-MARGIN);
 
@@ -161,14 +173,14 @@ namespace GDTerrain {
 			float xB = foregroundRect.Position.x + (ratioB * foregroundRect.Size.x);
 
 			Rect2 intervalRect = new(xA, foregroundRect.Position.y, xB - xA, foregroundRect.Size.y);
-			DrawRect(intervalRect, intervalColor);
+			DrawRect(intervalRect, _intervalColor);
 
 			xA = foregroundRect.Position.x + (ratioA * (foregroundRect.Size.x - grabberWidth));
 			xB = foregroundRect.Position.x + (ratioB * (foregroundRect.Size.x - grabberWidth));
 
 			void DrawGrabber(float posX) {
 				Rect2 grabberRect = new(posX, foregroundRect.Position.y, grabberWidth, foregroundRect.Size.y);
-				DrawRect(grabberRect, grabberColor);
+				DrawRect(grabberRect, _grabberColor);
 			}
 
 			DrawGrabber(xA);

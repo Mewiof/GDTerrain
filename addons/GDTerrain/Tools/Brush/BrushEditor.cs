@@ -88,7 +88,7 @@ namespace GDTerrain {
 			if (_terrainPainter != null) {
 				//_terrainPainter.SetSlopeLimitAngles(Mathf.DegToRad(a), Mathf.DegToRad(b));
 			}
-			_slopeLimitValueLabel.Text = a + ", " + b;
+			_slopeLimitValueLabel.Text = a.ToString("0.00") + ", " + b.ToString("0.00");
 		}
 		#endregion
 
@@ -177,7 +177,7 @@ namespace GDTerrain {
 			// old
 			if (_terrainPainter != null) {
 				//_terrainPainter.HeightChanged -= OnTerrainPainterHeightChanged;
-				_terrainPainter.Brush.shapesChanged -= OnBrushShapesChanged;
+				_terrainPainter.Brush.ShapesChanged -= OnBrushShapesChanged;
 			}
 
 			_terrainPainter = terrainPainter;
@@ -204,7 +204,7 @@ namespace GDTerrain {
 				OnBrushShapesChanged();
 
 				//_terrainPainter.HeightChanged += OnTerrainPainterHeightChanged;
-				brush.shapesChanged += OnBrushShapesChanged;
+				brush.ShapesChanged += OnBrushShapesChanged;
 			}
 		}
 
