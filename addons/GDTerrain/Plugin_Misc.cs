@@ -1,5 +1,4 @@
 ﻿#if TOOLS
-#define DEBUG
 
 using Godot;
 
@@ -8,18 +7,6 @@ namespace GDTerrain {
 	public partial class Plugin : EditorPlugin {
 
 		public const string BASE_PATH = "res://addons/GDTerrain/";
-
-		public static void DebugLog(string text) {
-#if DEBUG
-			GD.Print(text);
-#endif
-		}
-
-		public static void DebugLogError(string text) {
-#if DEBUG
-			GD.PrintErr(text);
-#endif
-		}
 
 		private static Script LoadScript(string path) {
 			return ResourceLoader.Load<Script>(BASE_PATH + path);

@@ -37,8 +37,8 @@ namespace GDTerrain {
 			CellOriginX = cellX;
 			CellOriginY = cellY;
 
-			SetMaterial(material);
 			SetWorld(parent.GetWorld3d());
+			SetMaterial(material);
 
 			Active = true;
 			PendingUpdate = false;
@@ -58,7 +58,7 @@ namespace GDTerrain {
 			RenderingServer.InstanceSetLayerMask(_meshInstance, value);
 		}
 
-		public void SetCastShadowsSetting(RenderingServer.ShadowCastingSetting value) {
+		public void SetShadowCastingSetting(RenderingServer.ShadowCastingSetting value) {
 			ThrowIfNullRID();
 			RenderingServer.InstanceGeometrySetCastShadowsSetting(_meshInstance, value);
 		}

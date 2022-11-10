@@ -1,4 +1,6 @@
-﻿using Godot;
+﻿using System.Collections.Generic;
+using Godot;
+using Godot.Collections;
 
 namespace GDTerrain {
 
@@ -28,7 +30,7 @@ namespace GDTerrain {
 		}
 
 		public override void _EnterTree() {
-			Plugin.DebugLog($"{nameof(Terrain)}->{nameof(_EnterTree)}");
+			Logger.DebugLog($"{nameof(Terrain)}->{nameof(_EnterTree)}");
 
 			SetPhysicsProcess(true);
 		}
@@ -48,64 +50,12 @@ namespace GDTerrain {
 				}
 			}
 
-			_updatedChunks = 0;
-
-			// for neighbours (seams)
-			int prevCount = _pendingChunkUpdates.Count;
-			PendingChunkUpdate u;
-			for (int i = 0; i < prevCount; i++) {
-				u = _pendingChunkUpdates[i];
-
-				// in case chunk got split
-				for (int d = 0; d < 4; d++) {
-					int nCPosX = u.cPosX + _sDirs[d, 0];
-					int nCPosY = u.cPosY + _sDirs[d, 1];
-
-					Chunk nChunk = GetChunkAt(nCPosX, nCPosY, u.lOD);
-					if (nChunk != null && nChunk.Active) {
-						// this will append elements to the array we're iterating on,
-						// but we iterate only on prev count, so it should be fine
-						AddChunkUpdate(nChunk, nCPosX, nCPosY, u.lOD);
-					}
-				}
-
-				// in case chunk got joined
-				if (u.lOD > 0) {
-					int cPosUpperX = u.cPosX * 2;
-					int cPosUpperY = u.cPosY * 2;
-					int nLOD = u.lOD - 1;
-
-					for (int rD = 0; rD < 8; rD++) {
-						int nCPosUpperX = cPosUpperX + _sRDirs[rD, 0];
-						int nCPosUpperY = cPosUpperY + _sRDirs[rD, 1];
-
-						Chunk nChunk = GetChunkAt(nCPosUpperX, nCPosUpperY, nLOD);
-						if (nChunk != null && nChunk.Active) {
-							// this will append elements to the array we're iterating on,
-							// but we iterate only on prev count, so it should be fine
-							AddChunkUpdate(nChunk, nCPosUpperX, nCPosUpperY, nLOD);
-						}
-					}
-				}
-			}
-
-			// update chunks
-			bool lVisible = IsVisibleInTree();
-			for (int i = 0; i < _pendingChunkUpdates.Count; i++) {
-				u = _pendingChunkUpdates[i];
-				Chunk chunk = GetChunkAt(u.cPosX, u.cPosY, u.lOD);
-				/*if (chunk == null) {
-					throw new Exception("'chunk == null'");
-				}*/
-				UpdateChunk(chunk, u.lOD, lVisible);
-				_updatedChunks++;
-			}
-
-			_pendingChunkUpdates.Clear();
+			PhysicsProcess_Chunks();
+			PhysicsProcess_Material();
 		}
 
 		private static readonly string[] _missingDataWarningArr = new string[1] {
-			"Missing data.\nSelect the 'Data Directory' property to assign/create data."
+			"Missing data.\nUse the 'Data Directory' property to assign/create data."
 		};
 
 		public override string[] _GetConfigurationWarnings() {
@@ -113,6 +63,72 @@ namespace GDTerrain {
 				return _missingDataWarningArr;
 			}
 			return null;
+		}
+
+		private static readonly List<string> _aPIShaderParams = new() {
+			"u_terrain_heightmap",
+			"u_terrain_normalmap",
+			"u_terrain_colormap",
+			"u_terrain_splatmap",
+			"u_terrain_splatmap_1",
+			"u_terrain_splatmap_2",
+			"u_terrain_splatmap_3",
+			"u_terrain_splat_index_map",
+			"u_terrain_splat_weight_map",
+			"u_terrain_globalmap",
+
+			"u_terrain_inverse_transform",
+			"u_terrain_normal_basis",
+
+			"u_ground_albedo_bump_0",
+			"u_ground_albedo_bump_1",
+			"u_ground_albedo_bump_2",
+			"u_ground_albedo_bump_3",
+
+			"u_ground_normal_roughness_0",
+			"u_ground_normal_roughness_1",
+			"u_ground_normal_roughness_2",
+			"u_ground_normal_roughness_3",
+
+			"u_ground_albedo_bump_array",
+			"u_ground_normal_roughness_array"
+		};
+
+		public override Array<Dictionary> _GetPropertyList() {
+			if (_material.Shader == null) {
+				return null;
+			}
+
+			Array<Dictionary> result = new();
+			Array<Dictionary> shaderParams = RenderingServer.GetShaderParameterList(_material.Shader.GetRid());
+			for (int i = 0; i < shaderParams.Count; i++) {
+				if (_aPIShaderParams.Contains(shaderParams[i]["name"].AsString())) {
+					continue;
+				}
+				Dictionary dict = shaderParams[i];
+				dict["name"] = "shader_params/" + shaderParams[i]["name"];
+				result.Add(dict);
+			}
+			return result;
+		}
+
+		public override Variant _Get(StringName property) {
+			string propertyStr = property.ToString();
+			if (propertyStr.StartsWith("shader_params/")) {
+				return _material.GetShaderParameter(propertyStr.Split("shader_params/")[1]);
+			}
+
+			return default;
+		}
+
+		public override bool _Set(StringName property, Variant value) {
+			string propertyStr = property.ToString();
+			if (propertyStr.StartsWith("shader_params/")) {
+				_material.SetShaderParameter(propertyStr.Split("shader_params/")[1], value);
+				return true;
+			}
+
+			return false;
 		}
 	}
 }

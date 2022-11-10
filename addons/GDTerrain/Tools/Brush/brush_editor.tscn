@@ -9,11 +9,12 @@ blend_mode = 1
 [node name="BrushEditor" type="Control"]
 layout_mode = 3
 anchors_preset = 0
-offset_right = 416.0
+offset_right = 512.0
 offset_bottom = 128.0
 script = ExtResource("1_5xn08")
 
 [node name="ShapeButton" type="Button" parent="."]
+layout_mode = 1
 anchors_preset = 9
 anchor_bottom = 1.0
 offset_right = 64.0
@@ -22,6 +23,7 @@ grow_vertical = 2
 [node name="TextureRect" type="TextureRect" parent="ShapeButton"]
 material = SubResource("CanvasItemMaterial_u4j12")
 custom_minimum_size = Vector2(32, 32)
+layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
@@ -33,6 +35,7 @@ ignore_texture_size = true
 stretch_mode = 5
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -42,26 +45,30 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="Size" type="HBoxContainer" parent="VBoxContainer"]
-offset_right = 352.0
+layout_mode = 2
+offset_right = 440.0
 offset_bottom = 26.0
 
 [node name="Label" type="Label" parent="VBoxContainer/Size"]
 custom_minimum_size = Vector2(128, 0)
+layout_mode = 2
 offset_right = 128.0
 offset_bottom = 26.0
 text = "Brush Size"
 vertical_alignment = 1
 
 [node name="Control" type="HBoxContainer" parent="VBoxContainer/Size"]
+layout_mode = 2
 offset_left = 132.0
-offset_right = 352.0
+offset_right = 440.0
 offset_bottom = 26.0
 size_flags_horizontal = 3
 
 [node name="HSlider" type="HSlider" parent="VBoxContainer/Size/Control"]
 custom_minimum_size = Vector2(128, 0)
+layout_mode = 2
 offset_top = 5.0
-offset_right = 128.0
+offset_right = 208.0
 offset_bottom = 21.0
 size_flags_horizontal = 3
 size_flags_vertical = 4
@@ -72,9 +79,10 @@ exp_edit = true
 rounded = true
 
 [node name="ValueLabel" type="Label" parent="VBoxContainer/Size/Control"]
-custom_minimum_size = Vector2(88, 0)
-offset_left = 132.0
-offset_right = 220.0
+custom_minimum_size = Vector2(96, 0)
+layout_mode = 2
+offset_left = 212.0
+offset_right = 308.0
 offset_bottom = 26.0
 size_flags_horizontal = 8
 size_flags_vertical = 1
@@ -83,12 +91,14 @@ horizontal_alignment = 2
 vertical_alignment = 1
 
 [node name="Opacity" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
 offset_top = 30.0
-offset_right = 352.0
+offset_right = 440.0
 offset_bottom = 56.0
 
 [node name="Label" type="Label" parent="VBoxContainer/Opacity"]
 custom_minimum_size = Vector2(128, 0)
+layout_mode = 2
 offset_right = 128.0
 offset_bottom = 26.0
 tooltip_text = "Strength"
@@ -97,15 +107,17 @@ text = "Brush Opacity"
 vertical_alignment = 1
 
 [node name="Control" type="HBoxContainer" parent="VBoxContainer/Opacity"]
+layout_mode = 2
 offset_left = 132.0
-offset_right = 352.0
+offset_right = 440.0
 offset_bottom = 26.0
 size_flags_horizontal = 3
 
 [node name="HSlider" type="HSlider" parent="VBoxContainer/Opacity/Control"]
 custom_minimum_size = Vector2(128, 0)
+layout_mode = 2
 offset_top = 5.0
-offset_right = 128.0
+offset_right = 208.0
 offset_bottom = 21.0
 size_flags_horizontal = 3
 size_flags_vertical = 4
@@ -114,9 +126,10 @@ step = 0.01
 value = 1.0
 
 [node name="ValueLabel" type="Label" parent="VBoxContainer/Opacity/Control"]
-custom_minimum_size = Vector2(88, 0)
-offset_left = 132.0
-offset_right = 220.0
+custom_minimum_size = Vector2(96, 0)
+layout_mode = 2
+offset_left = 212.0
+offset_right = 308.0
 offset_bottom = 26.0
 size_flags_horizontal = 8
 size_flags_vertical = 1
@@ -126,12 +139,14 @@ vertical_alignment = 1
 
 [node name="Height" type="HBoxContainer" parent="VBoxContainer"]
 visible = false
+layout_mode = 2
 offset_top = 60.0
 offset_right = 352.0
 offset_bottom = 91.0
 
 [node name="Label" type="Label" parent="VBoxContainer/Height"]
 custom_minimum_size = Vector2(128, 0)
+layout_mode = 2
 offset_top = 2.0
 offset_right = 128.0
 offset_bottom = 28.0
@@ -139,6 +154,7 @@ text = "Height"
 vertical_alignment = 1
 
 [node name="Control" type="HBoxContainer" parent="VBoxContainer/Height"]
+layout_mode = 2
 offset_left = 132.0
 offset_right = 352.0
 offset_bottom = 31.0
@@ -146,6 +162,7 @@ size_flags_horizontal = 3
 
 [node name="SpinBox" type="SpinBox" parent="VBoxContainer/Height/Control"]
 custom_minimum_size = Vector2(128, 0)
+layout_mode = 2
 offset_right = 128.0
 offset_bottom = 31.0
 size_flags_horizontal = 3
@@ -155,6 +172,7 @@ step = 0.01
 
 [node name="Button" type="Button" parent="VBoxContainer/Height/Control"]
 custom_minimum_size = Vector2(64, 0)
+layout_mode = 2
 offset_left = 156.0
 offset_right = 220.0
 offset_bottom = 31.0
@@ -164,18 +182,21 @@ icon_alignment = 1
 
 [node name="Color" type="HBoxContainer" parent="VBoxContainer"]
 visible = false
+layout_mode = 2
 offset_top = 95.0
 offset_right = 344.0
 offset_bottom = 121.0
 
 [node name="Label" type="Label" parent="VBoxContainer/Color"]
 custom_minimum_size = Vector2(128, 0)
+layout_mode = 2
 offset_right = 128.0
 offset_bottom = 26.0
 text = "Color"
 vertical_alignment = 1
 
 [node name="ColorPickerButton" type="ColorPickerButton" parent="VBoxContainer/Color"]
+layout_mode = 2
 offset_left = 132.0
 offset_right = 344.0
 offset_bottom = 26.0
@@ -184,18 +205,21 @@ icon_alignment = 1
 
 [node name="Density" type="HBoxContainer" parent="VBoxContainer"]
 visible = false
+layout_mode = 2
 offset_top = 125.0
 offset_right = 344.0
 offset_bottom = 151.0
 
 [node name="Label" type="Label" parent="VBoxContainer/Density"]
 custom_minimum_size = Vector2(128, 0)
+layout_mode = 2
 offset_right = 128.0
 offset_bottom = 26.0
 text = "Density"
 vertical_alignment = 1
 
 [node name="Control" type="HBoxContainer" parent="VBoxContainer/Density"]
+layout_mode = 2
 offset_left = 132.0
 offset_right = 344.0
 offset_bottom = 26.0
@@ -203,6 +227,7 @@ size_flags_horizontal = 3
 
 [node name="HSlider" type="HSlider" parent="VBoxContainer/Density/Control"]
 custom_minimum_size = Vector2(128, 0)
+layout_mode = 2
 offset_top = 5.0
 offset_right = 128.0
 offset_bottom = 21.0
@@ -215,7 +240,8 @@ exp_edit = true
 rounded = true
 
 [node name="ValueLabel" type="Label" parent="VBoxContainer/Density/Control"]
-custom_minimum_size = Vector2(88, 0)
+custom_minimum_size = Vector2(96, 0)
+layout_mode = 2
 offset_left = 164.0
 offset_right = 212.0
 offset_bottom = 26.0
@@ -227,18 +253,21 @@ vertical_alignment = 1
 
 [node name="Erase" type="HBoxContainer" parent="VBoxContainer"]
 visible = false
+layout_mode = 2
 offset_top = 155.0
 offset_right = 344.0
 offset_bottom = 181.0
 
 [node name="Label" type="Label" parent="VBoxContainer/Erase"]
 custom_minimum_size = Vector2(128, 0)
+layout_mode = 2
 offset_right = 128.0
 offset_bottom = 26.0
 text = "Erase"
 vertical_alignment = 1
 
 [node name="CheckBox" type="CheckBox" parent="VBoxContainer/Erase"]
+layout_mode = 2
 offset_left = 132.0
 offset_right = 156.0
 offset_bottom = 26.0
@@ -246,18 +275,21 @@ icon_alignment = 1
 
 [node name="SlopeLimit" type="HBoxContainer" parent="VBoxContainer"]
 visible = false
+layout_mode = 2
 offset_top = 185.0
 offset_right = 344.0
 offset_bottom = 211.0
 
 [node name="Label" type="Label" parent="VBoxContainer/SlopeLimit"]
 custom_minimum_size = Vector2(128, 0)
+layout_mode = 2
 offset_right = 128.0
 offset_bottom = 26.0
 text = "Slope Limit"
 vertical_alignment = 1
 
 [node name="Control" type="HBoxContainer" parent="VBoxContainer/SlopeLimit"]
+layout_mode = 2
 offset_left = 132.0
 offset_right = 344.0
 offset_bottom = 26.0
@@ -265,7 +297,7 @@ size_flags_horizontal = 3
 
 [node name="IntervalSlider" type="Control" parent="VBoxContainer/SlopeLimit/Control"]
 custom_minimum_size = Vector2(128, 0)
-layout_mode = 3
+layout_mode = 2
 anchors_preset = 0
 offset_right = 128.0
 offset_bottom = 26.0
@@ -274,7 +306,8 @@ script = ExtResource("1_s7d6h")
 Max = 90.0
 
 [node name="ValueLabel" type="Label" parent="VBoxContainer/SlopeLimit/Control"]
-custom_minimum_size = Vector2(88, 0)
+custom_minimum_size = Vector2(96, 0)
+layout_mode = 2
 offset_left = 164.0
 offset_right = 212.0
 offset_bottom = 26.0

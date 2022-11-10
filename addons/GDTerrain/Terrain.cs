@@ -1,21 +1,20 @@
 using System.Runtime.CompilerServices;
 using Godot;
 using GDTerrain.Native;
+using System;
 
 namespace GDTerrain {
 
 	[Tool]
 	public partial class Terrain : Node3D {
 
-		//private const string _SHADER_DEFAULT = "Default";
-
-		private readonly Mesher _mesher;
+		private readonly Mesher _mesher = new();
 
 		#region QuadTreeLOD
-		private readonly QuadTreeLOD _lodder;
+		private readonly QuadTreeLOD _lodder = new();
 
 		[Export(PropertyHint.Range, "2,5,1")]
-		public float LODScale {
+		public float LODScale { // TODO: float?
 			get => _lodder.SplitScale;
 			set => _lodder.SplitScale = value;
 		}
@@ -24,10 +23,23 @@ namespace GDTerrain {
 		#region Data
 		private TerrainData _data;
 
-		private void OnDataRegionChanged(int arg1, int arg2, int arg3, int arg4, int arg5) {
+		private void OnDataRegionChanged(int x, int y, int w, int h, int mapTypeIndex) {
+			if (mapTypeIndex == TerrainData.MAP_HEIGHT) {
+				SetAreaDirty(x, y, w, h);
+			}
 		}
 
 		private void OnDataMapChanged(int typeIndex, int index) {
+			if (typeIndex == TerrainData.MAP_DETAIL ||
+				typeIndex == TerrainData.MAP_HEIGHT ||
+				typeIndex == TerrainData.MAP_NORMAL ||
+				typeIndex == TerrainData.MAP_GLOBAL_ALBEDO) {
+				// TODO
+			}
+
+			if (typeIndex != TerrainData.MAP_DETAIL) {
+				_dirty = true;
+			}
 		}
 
 		private void OnDataMapAdded(int arg1, int arg2) {
@@ -44,19 +56,19 @@ namespace GDTerrain {
 			}
 			set {
 				if (_data == value) {
-					Plugin.DebugLog($"[{nameof(Terrain)}] Same '{nameof(_data)}'. Ignoring...");
+					Logger.DebugLog($"[{nameof(Terrain)}] Same '{nameof(_data)}'. Ignoring...");
 					return;
 				}
 
-				Plugin.DebugLog($"[{nameof(Terrain)}] Setting new '{nameof(_data)}'");
+				Logger.DebugLog($"[{nameof(Terrain)}] Setting new '{nameof(_data)}'");
 
 				// old
 				if (_data != null) {
-					Plugin.DebugLog($"[{nameof(Terrain)}] Disconnecting old '{nameof(TerrainData)}'...");
-					_data.resolutionChanged -= ResetGroundChunks;
-					//_data.regionChanged -= OnDataRegionChanged;
-					//_data.mapChanged -= OnDataMapChanged;
-					_data.mapChanged -= OnDataMapAdded;
+					Logger.DebugLog($"[{nameof(Terrain)}] Disconnecting old '{nameof(TerrainData)}'...");
+					_data.ResolutionChanged -= ResetChunks;
+					_data.RegionChanged -= OnDataRegionChanged;
+					_data.MapChanged -= OnDataMapChanged;
+					//_data.mapAdded -= OnDataMapAdded;
 					//_data.mapRemoved -= OnDataMapRemoved;
 				}
 
@@ -67,20 +79,22 @@ namespace GDTerrain {
 
 				// new
 				if (_data != null) {
-					Plugin.DebugLog($"[{nameof(Terrain)}] Connecting new '{nameof(TerrainData)}'...");
+					Logger.DebugLog($"[{nameof(Terrain)}] Connecting new '{nameof(TerrainData)}'...");
 
-					_data.resolutionChanged += ResetGroundChunks;
-					//_data.regionChanged += OnDataRegionChanged;
-					_data.mapChanged += OnDataMapChanged;
+					_data.ResolutionChanged += ResetChunks;
+					_data.RegionChanged += OnDataRegionChanged;
+					_data.MapChanged += OnDataMapChanged;
 					//_data.mapAdded += OnDataMapAdded;
 					//_data.mapRemoved += OnDataMapRemoved;
 
-					ResetGroundChunks();
+					ResetChunks();
 				}
+
+				_dirty = true;
 
 				UpdateConfigurationWarnings();
 
-				Plugin.DebugLog($"[{nameof(Terrain)}] '{nameof(_data)}' has been set");
+				Logger.DebugLog($"[{nameof(Terrain)}] '{nameof(_data)}' has been set");
 			}
 		}
 
@@ -114,7 +128,7 @@ namespace GDTerrain {
 				// exists?
 				if (ResourceLoader.Exists(fPath)) {
 					// load existing
-					Data = ResourceLoader.Load<TerrainData>(fPath, null, ResourceLoader.CacheMode.Replace);
+					Data = ResourceLoader.Load<TerrainData>(fPath);
 					return;
 				}
 
@@ -129,14 +143,14 @@ namespace GDTerrain {
 		#endregion
 
 		public Terrain() : base() {
-			Plugin.DebugLog($"[{nameof(Terrain)}] Init");
+			Logger.DebugLog($"[{nameof(Terrain)}] Init");
 
-			_mesher = new();
-			_lodder = new();
 			_lodder.SetCallbacks(MakeChunk, RecycleChunk, GetVerticalBounds);
 
 			// TODO: should i call it in editor only?
 			SetNotifyTransform(true);
+
+			Init_Material();
 		}
 	}
 }

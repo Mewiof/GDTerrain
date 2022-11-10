@@ -23,7 +23,7 @@ namespace GDTerrain {
 		private const int _MIN_CHUNK_SIZE = 16;
 		private const int _MAX_CHUNK_SIZE = 64;
 
-		// Directions to neighbour chunks
+		/// <summary>Directions to neighbour chunks</summary>
 		private static readonly int[,] _sDirs = new int[4, 2] {
 			{-1, 0},
 			{1, 0},
@@ -31,7 +31,7 @@ namespace GDTerrain {
 			{0, 1}
 		};
 
-		// Directions to neighbour chunks of higher LOD
+		/// <summary>Directions to neighbour chunks of higher LOD</summary>
 		private static readonly int[,] _sRDirs = new int[8, 2] {
 			{-1, 0},
 			{-1, 1},
@@ -60,9 +60,9 @@ namespace GDTerrain {
 				if (cS == _chunkSize) {
 					return;
 				}
-				Plugin.DebugLog($"Setting '{nameof(_chunkSize)}' to {cS}...");
+				Logger.DebugLog($"Setting '{nameof(_chunkSize)}' to {cS}...");
 				_chunkSize = cS;
-				ResetGroundChunks();
+				ResetChunks();
 			}
 		}
 		#endregion
@@ -93,8 +93,7 @@ namespace GDTerrain {
 		}
 		#endregion
 
-		// Add to update queue
-		private void AddChunkUpdate(Chunk chunk, int cPosX, int cPosY, int lOD) {
+		private void QueueChunkUpdate(Chunk chunk, int cPosX, int cPosY, int lOD) {
 			if (chunk.PendingUpdate) {
 				return;
 			}
@@ -141,8 +140,10 @@ namespace GDTerrain {
 			chunk.PendingUpdate = false;
 		}
 
+		#region Func
+		// Func
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		private Chunk MakeChunk(int cPosX, int cPosY, int lOD) {
+		private Chunk MakeChunk(int cPosX, int cPosY, int lOD) { // TODO
 			Chunk chunk = GetChunkAt(cPosX, cPosY, lOD);
 
 			if (chunk == null) {
@@ -151,26 +152,28 @@ namespace GDTerrain {
 				int originInCelX = cPosX * _chunkSize * lODFactor;
 				int originInCelY = cPosY * _chunkSize * lODFactor;
 
-				chunk = new(this, originInCelX, originInCelY, null);//?
+				chunk = new(this, originInCelX, originInCelY, _material);//?
 				chunk.OnParentTransformChanged(InternalTransform);
 
-				//chunk.SetRenderLayerMask(_renderLayerMask);
-				//chunk.SetCastShadowSetting(_castShadowSetting);
+				chunk.SetRenderLayerMask(_renderLayerMask);
+				chunk.SetShadowCastingSetting(_shadowCastSetting);
 
 				SetChunkAt(cPosX, cPosY, lOD, chunk);
 			}
 
-			AddChunkUpdate(chunk, cPosX, cPosY, lOD);
+			QueueChunkUpdate(chunk, cPosX, cPosY, lOD);
 
 			chunk.Active = true;
 			return chunk;
 		}
 
+		// Func
 		private static void RecycleChunk(Chunk chunk, int cPosX, int cPosY, int lOD) {//?
 			chunk.Visible = false;
 			chunk.Active = false;
 		}
 
+		// Func
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private Vector2 GetVerticalBounds(int cPosX, int cPosY, int lOD) {
 			int chunkSize = _chunkSize * QuadTreeLOD.GetLODFactor(lOD);//?
@@ -178,6 +181,7 @@ namespace GDTerrain {
 			int originInCelY = cPosY * chunkSize;
 			return _data.GetPointAABB(originInCelX + (chunkSize / 2), originInCelY + (chunkSize / 2));
 		}
+		#endregion
 
 		// References
 		private void ClearAllChunks() {
@@ -188,7 +192,7 @@ namespace GDTerrain {
 			}
 		}
 
-		private void ResetGroundChunks() {
+		private void ResetChunks() {
 			ClearAllChunks();
 			_pendingChunkUpdates.Clear();
 			_chunkGrids.Clear();
@@ -204,7 +208,7 @@ namespace GDTerrain {
 
 			// create grids
 			for (int lOD = 0; lOD < lODCount; lOD++) {
-				Plugin.DebugLog($"Creating grid for {lOD} ({cRes}x{cRes})...");
+				Logger.DebugLog($"Creating grid for {lOD} ({cRes}x{cRes})...");
 				_chunkGrids[lOD] = new(cRes, cRes);
 				cRes /= 2;
 			}
@@ -222,6 +226,91 @@ namespace GDTerrain {
 			Vector3 localOrigin = toLocal * worldOrigin;
 			Vector3 localDir = toLocal.basis * worldDirection;
 			return _data.CellRaycast(localOrigin, localDir, maxDistance);
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private void SetAreaDirty(int originInCelX, int originInCelY, int sizeInCelX, int sizeInCelY) {
+			int cPos0X = originInCelX / ChunkSize;
+			int cPos0Y = originInCelY / ChunkSize;
+			int cSizeX = ((sizeInCelX - 1) / ChunkSize) + 1;
+			int cSizeY = ((sizeInCelY - 1) / ChunkSize) + 1;
+
+			for (int lOD = 0; lOD < _lodder.LODCount; lOD++) {
+				Grid<Chunk> grid = _chunkGrids[lOD];
+				int s = QuadTreeLOD.GetLODFactor(lOD);
+
+				int minX = cPos0X / s;
+				int minY = cPos0Y / s;
+				int maxX = (cPos0X + cSizeX - 1) / s + 1;
+				int maxY = (cPos0Y + cSizeY - 1) / s + 1;
+
+				for (int cY = minY; cY < maxY; cY++) {
+					for (int cX = minX; cX < maxX; cX++) {
+						// cY, cX
+						Chunk chunk = grid.GetOrDefault(cY, cX, null);
+						if (chunk != null && chunk.Active) {
+							QueueChunkUpdate(chunk, cX, cY, lOD);
+						}
+					}
+				}
+			}
+		}
+
+		private void PhysicsProcess_Chunks() {
+			_updatedChunks = 0;
+
+			// for neighbours (seams)
+			int prevCount = _pendingChunkUpdates.Count;
+			PendingChunkUpdate u;
+			for (int i = 0; i < prevCount; i++) {
+				u = _pendingChunkUpdates[i];
+
+				// in case chunk got split
+				for (int d = 0; d < 4; d++) {
+					int nCPosX = u.cPosX + _sDirs[d, 0];
+					int nCPosY = u.cPosY + _sDirs[d, 1];
+
+					Chunk nChunk = GetChunkAt(nCPosX, nCPosY, u.lOD);
+					if (nChunk != null && nChunk.Active) {
+						// this will add elements to the array we are iterating on,
+						// but we only iterate on prev count, so it should be fine
+						QueueChunkUpdate(nChunk, nCPosX, nCPosY, u.lOD);
+					}
+				}
+
+				// in case chunk got joined
+				if (u.lOD > 0) {
+					int cPosUpperX = u.cPosX * 2;
+					int cPosUpperY = u.cPosY * 2;
+					int nLOD = u.lOD - 1;
+
+					for (int rD = 0; rD < 8; rD++) {
+						int nCPosUpperX = cPosUpperX + _sRDirs[rD, 0];
+						int nCPosUpperY = cPosUpperY + _sRDirs[rD, 1];
+
+						Chunk nChunk = GetChunkAt(nCPosUpperX, nCPosUpperY, nLOD);
+						if (nChunk != null && nChunk.Active) {
+							// this will add elements to the array we are iterating on,
+							// but we only iterate on prev count, so it should be fine
+							QueueChunkUpdate(nChunk, nCPosUpperX, nCPosUpperY, nLOD);
+						}
+					}
+				}
+			}
+
+			// update chunks
+			bool lVisible = IsVisibleInTree();
+			for (int i = 0; i < _pendingChunkUpdates.Count; i++) {
+				u = _pendingChunkUpdates[i];
+				Chunk chunk = GetChunkAt(u.cPosX, u.cPosY, u.lOD);
+				/*if (chunk == null) {
+					throw new Exception("'chunk == null'");
+				}*/
+				UpdateChunk(chunk, u.lOD, lVisible);
+				_updatedChunks++;
+			}
+
+			_pendingChunkUpdates.Clear();
 		}
 	}
 }

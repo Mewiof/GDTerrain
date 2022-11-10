@@ -12,11 +12,11 @@ namespace GDTerrain {
 		private Terrain TargetTerrain {
 			set {
 				if (_targetTerrain == value) {
-					DebugLog($"{nameof(TargetTerrain)}->set->same");
+					Logger.DebugLog($"{nameof(TargetTerrain)}->set->same");
 					return;
 				}
 
-				DebugLog($"{nameof(TargetTerrain)}->set");
+				Logger.DebugLog($"{nameof(TargetTerrain)}->set");
 
 				// old
 				if (_targetTerrain != null) {
@@ -178,7 +178,7 @@ namespace GDTerrain {
 		}
 
 		public override void _EnterTree() {
-			DebugLog($"{nameof(GDTerrain)}->{nameof(_EnterTree)}");
+			Logger.DebugLog($"{nameof(GDTerrain)}->{nameof(_EnterTree)}");
 
 			// custom types
 			AddCustomType(nameof(Terrain), nameof(Node3D), LoadScript("Terrain.cs"), LoadIcon("heightmap_node"));
@@ -199,7 +199,7 @@ namespace GDTerrain {
 		}
 
 		public override void _ExitTree() {
-			DebugLog($"{nameof(GDTerrain)}->{nameof(_ExitTree)}");
+			Logger.DebugLog($"{nameof(GDTerrain)}->{nameof(_ExitTree)}");
 
 			TargetTerrain = null;
 
@@ -259,7 +259,7 @@ namespace GDTerrain {
 
 		#region Target Terrain
 		private void OnTerrainExitedScene() {
-			DebugLog($"{nameof(OnTerrainExitedScene)}");
+			Logger.DebugLog($"{nameof(OnTerrainExitedScene)}");
 			TargetTerrain = null;
 		}
 		#endregion

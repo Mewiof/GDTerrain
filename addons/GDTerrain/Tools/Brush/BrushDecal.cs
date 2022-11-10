@@ -20,7 +20,7 @@ namespace GDTerrain {
 			set {
 				// old
 				if (_targetTerrain != null) {
-					_targetTerrain.transformChanged -= OnTargetTerrainTransformChanged;
+					_targetTerrain.TransformChanged -= OnTargetTerrainTransformChanged;
 					_directMeshInstance.SetWorld(null);
 				}
 
@@ -28,7 +28,7 @@ namespace GDTerrain {
 
 				// new
 				if (_targetTerrain != null) {
-					_targetTerrain.transformChanged += OnTargetTerrainTransformChanged;
+					_targetTerrain.TransformChanged += OnTargetTerrainTransformChanged;
 					OnTargetTerrainTransformChanged(_targetTerrain.InternalTransform);
 					_directMeshInstance.SetWorld(_targetTerrain.GetWorld3d());
 				}
@@ -102,7 +102,7 @@ namespace GDTerrain {
 		public void UpdateVisibility() {
 			ImageTexture heightmapTexture = GetHeightmapTexture();
 			if (heightmapTexture == null) {
-				//Plugin.DebugLog($"{nameof(BrushDecal)}->{nameof(UpdateVisibility)}->'heightmapTexture == null'");
+				//Logger.DebugLog($"{nameof(BrushDecal)}->{nameof(UpdateVisibility)}->'heightmapTexture == null'");
 				_material.SetShaderParameter("u_terrain_heightmap", default);
 				_directMeshInstance.Visible = false;
 				return;

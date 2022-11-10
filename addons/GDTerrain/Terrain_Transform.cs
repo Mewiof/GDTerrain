@@ -46,7 +46,7 @@ namespace GDTerrain {
 		public Transform3D InternalTransform {
 			get {
 				Transform3D gT = GlobalTransform;
-				Transform3D result = new(gT.basis * Basis.Scaled(_mapScale), gT.origin);
+				Transform3D result = new(gT.basis * Basis.Identity.Scaled(_mapScale), gT.origin);
 				if (_centered && HasData) {
 					float halfSize = .5f * (_data.Resolution - 1);
 					result.origin += result.basis * -new Vector3(halfSize, 0f, halfSize);
@@ -55,14 +55,18 @@ namespace GDTerrain {
 			}
 		}
 
+		private Camera3D _cachedCamera;
 		private Vector3 _viewerPosWorld;
 
 		public void UpdateViewerPosition(Camera3D camera) {
 			if (camera == null) {
-				Viewport viewport = GetViewport();
-				if (viewport != null) {
-					camera = viewport.GetCamera3d();
+				if (_cachedCamera == null) {
+					Viewport viewport = GetViewport();
+					if (viewport != null) {
+						_cachedCamera = viewport.GetCamera3d();
+					}
 				}
+				camera = _cachedCamera;
 			}
 
 			if (camera == null) {
@@ -72,7 +76,8 @@ namespace GDTerrain {
 			_viewerPosWorld = camera.GlobalTransform.origin;
 		}
 
-		public Action<Transform3D> transformChanged;
+		[Signal]
+		public delegate void TransformChangedEventHandler(Transform3D value);
 
 		private void OnTransformChanged() {
 			// spawned?
@@ -84,7 +89,7 @@ namespace GDTerrain {
 			Transform3D internalTransform = InternalTransform;
 			ForAllChunks(item => item.OnParentTransformChanged(internalTransform));
 
-			transformChanged?.Invoke(internalTransform);
+			EmitSignal(nameof(TransformChanged), internalTransform);
 		}
 	}
 }
