@@ -44,7 +44,7 @@ namespace GDTerrain {
 			PendingUpdate = false;
 		}
 
-		~Chunk() {
+		~Chunk() {//?
 			TryFreeRID();
 		}
 

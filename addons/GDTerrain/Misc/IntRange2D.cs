@@ -2,7 +2,7 @@
 using System.Runtime.CompilerServices;
 using Godot;
 
-namespace GDTerrain.Native {
+namespace GDTerrain {
 
 	// Supposed to be native?
 	public struct IntRange2D {

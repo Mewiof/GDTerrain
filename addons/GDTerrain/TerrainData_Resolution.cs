@@ -1,5 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-using Godot;
+﻿using Godot;
 
 namespace GDTerrain {
 
@@ -20,12 +19,7 @@ namespace GDTerrain {
 			8193 // :skull:
 		};
 
-		public int Resolution {
-			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			get;
-			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			private set;
-		}
+		public int Resolution { get; private set; }
 
 		[Signal]
 		public delegate void ResolutionChangedEventHandler();
@@ -36,39 +30,28 @@ namespace GDTerrain {
 			newResolution = Util.Clamp(newResolution, MIN_RESOLUTION, MAX_RESOLUTION);
 			newResolution = Util.NextPowerOfTwo(newResolution - 1) + 1;
 
-			Logger.DebugLog($"[{nameof(TerrainData)}->{nameof(Resize)}] {Resolution}->{newResolution}");
-
+			Logger.DebugLog($"[{nameof(TerrainData)}->{nameof(Resize)}] '{Resolution}->{newResolution}'");
 			Resolution = newResolution;
 
-			MapTypeInfo mapTypeInfo;
-			Map[] maps;
-			Map map;
-
 			for (int tI = 0; tI < MAP_TYPE_COUNT; tI++) {
-				mapTypeInfo = _mapTypes[tI];
-				maps = _arrayOfMapArrays[tI];
+				MapTypeInfo mapTypeInfo = _mapTypes[tI];
+				Map[] maps = _arrayOfMapArrays[tI];
 
 				for (int i = 0; i < maps.Length; i++) {
-					map = maps[i];
-
+					Map map = maps[i];
 					Logger.DebugLog($"{nameof(TerrainData)}->{nameof(Resize)}->{mapTypeInfo.name}->{i}");
 
 					if (map.image == null) {
 						Logger.DebugLog($"[{nameof(TerrainData)}->{nameof(Resize)}] '{nameof(map.image)}' is null. Creating...");
-						map.image = Image.Create(Resolution, Resolution, false, mapTypeInfo.format);
-
-						Color? fillColor = GetMapDefaultFill(tI, i);
-						if (fillColor.HasValue) {
-							map.image.Fill(fillColor.Value);
-						}
+						map.CreateDefaultImage(Resolution, mapTypeInfo, i);
 					} else {
 						if (stretch && !mapTypeInfo.authored) {
-							map.image = Image.Create(Resolution, Resolution, false, mapTypeInfo.format);
+							map.CreateDefaultImage(Resolution, mapTypeInfo);
 						} else {
 							if (stretch) {
 								map.image.Resize(Resolution, Resolution);
 							} else {
-								Color? fillColor = GetMapDefaultFill(tI, i);
+								Color? fillColor = mapTypeInfo.GetDefaultFill(i);
 								map.image = Util.GetCroppedImage(map.image, Resolution, Resolution, fillColor, anchor);
 							}
 						}

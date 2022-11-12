@@ -1,6 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 
-namespace GDTerrain.Native {
+namespace GDTerrain {
 
 	// Supposed to be native?
 	public sealed class Quad {

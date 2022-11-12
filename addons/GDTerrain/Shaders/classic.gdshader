@@ -1,21 +1,21 @@
 shader_type spatial;
 
-uniform sampler2D u_terrain_heightmap;
-uniform sampler2D u_terrain_normalmap;
-uniform sampler2D u_terrain_colormap;
-uniform sampler2D u_terrain_splatmap;
-uniform mat4 u_terrain_inverse_transform;
-uniform mat3 u_terrain_normal_basis;
+uniform sampler2D p_map_height;
+uniform sampler2D p_map_normal;
+uniform sampler2D p_map_color;
+uniform sampler2D p_map_splat;
+uniform mat4 p_terrain_inv_transform;
+uniform mat3 p_terrain_normal_basis;
 
-uniform sampler2D u_ground_albedo_bump_0 : source_color;
-uniform sampler2D u_ground_albedo_bump_1 : source_color;
-uniform sampler2D u_ground_albedo_bump_2 : source_color;
-uniform sampler2D u_ground_albedo_bump_3 : source_color;
+uniform sampler2D p_ground_albedo_bump_0 : source_color;
+uniform sampler2D p_ground_albedo_bump_1 : source_color;
+uniform sampler2D p_ground_albedo_bump_2 : source_color;
+uniform sampler2D p_ground_albedo_bump_3 : source_color;
 
-uniform float u_ground_uv_scale = 20.0;
-uniform bool u_depth_blending = true;
-uniform bool u_triplanar = false;
-uniform vec4 u_tile_reduction;
+uniform float p_ground_uv_scale = 1.0;
+uniform bool p_depth_blending = true;
+uniform bool p_triplanar;
+uniform vec4 p_tile_reduction = vec4(1.0, 1.0, 0.0, 0.0);
 
 varying vec4 v_tint;
 varying vec4 v_splat;
@@ -88,21 +88,21 @@ vec4 texture_antitile(sampler2D tex, vec2 uv) {
 }
 
 void vertex() {
-	vec2 cell_coords = (u_terrain_inverse_transform * MODEL_MATRIX * vec4(VERTEX, 1)).xz;
+	vec2 cell_coords = (p_terrain_inv_transform * MODEL_MATRIX * vec4(VERTEX, 1)).xz;
 	
 	cell_coords += vec2(0.5);
 	
-	UV = cell_coords / vec2(textureSize(u_terrain_heightmap, 0));
+	UV = cell_coords / vec2(textureSize(p_map_height, 0));
 	
-	float h = texture(u_terrain_heightmap, UV).r;
+	float h = texture(p_map_height, UV).r;
 	VERTEX.y = h;
 
-	v_ground_uv = vec3(cell_coords.x, h * MODEL_MATRIX[1][1], cell_coords.y) / u_ground_uv_scale;
+	v_ground_uv = vec3(cell_coords.x, h * MODEL_MATRIX[1][1], cell_coords.y) / p_ground_uv_scale;
 	
-	v_tint = texture(u_terrain_colormap, UV);
-	v_splat = texture(u_terrain_splatmap, UV);
+	v_tint = texture(p_map_color, UV);
+	v_splat = texture(p_map_splat, UV);
 	
-	NORMAL = u_terrain_normal_basis * unpack_normal(texture(u_terrain_normalmap, UV));
+	NORMAL = p_terrain_normal_basis * unpack_normal(texture(p_map_normal, UV));
 }
 
 void fragment() {
@@ -111,39 +111,39 @@ void fragment() {
 	}
 	
 	vec3 terrain_normal_world = 
-		u_terrain_normal_basis * unpack_normal(texture(u_terrain_normalmap, UV));
+		p_terrain_normal_basis * unpack_normal(texture(p_map_normal, UV));
 	terrain_normal_world = normalize(terrain_normal_world);
 	
 	vec2 ground_uv = v_ground_uv.xz;
 	
 	vec4 ab0, ab1, ab2, ab3;
-	if (u_triplanar) {
+	if (p_triplanar) {
 		vec3 blending = get_triplanar_blend(terrain_normal_world);
 
-		ab3 = texture_triplanar(u_ground_albedo_bump_3, v_ground_uv, blending);
+		ab3 = texture_triplanar(p_ground_albedo_bump_3, v_ground_uv, blending);
 
 	} else {
-		if (u_tile_reduction[3] > 0.0) {
-			ab3 = texture(u_ground_albedo_bump_3, ground_uv);
+		if (p_tile_reduction[3] > 0.0) {
+			ab3 = texture(p_ground_albedo_bump_3, ground_uv);
 		} else {
-			ab3 = texture_antitile(u_ground_albedo_bump_3, ground_uv);
+			ab3 = texture_antitile(p_ground_albedo_bump_3, ground_uv);
 		}
 	}
 	
-	if (u_tile_reduction[0] > 0.0) {
-		ab0 = texture_antitile(u_ground_albedo_bump_0, ground_uv);
+	if (p_tile_reduction[0] > 0.0) {
+		ab0 = texture_antitile(p_ground_albedo_bump_0, ground_uv);
 	} else {
-		ab0 = texture(u_ground_albedo_bump_0, ground_uv);
+		ab0 = texture(p_ground_albedo_bump_0, ground_uv);
 	}
-	if (u_tile_reduction[1] > 0.0) {
-		ab1 = texture_antitile(u_ground_albedo_bump_1, ground_uv);
+	if (p_tile_reduction[1] > 0.0) {
+		ab1 = texture_antitile(p_ground_albedo_bump_1, ground_uv);
 	} else {
-		ab1 = texture(u_ground_albedo_bump_1, ground_uv);
+		ab1 = texture(p_ground_albedo_bump_1, ground_uv);
 	}
-	if (u_tile_reduction[2] > 0.0) {
-		ab2 = texture_antitile(u_ground_albedo_bump_2, ground_uv);
+	if (p_tile_reduction[2] > 0.0) {
+		ab2 = texture_antitile(p_ground_albedo_bump_2, ground_uv);
 	} else {
-		ab2 = texture(u_ground_albedo_bump_2, ground_uv);
+		ab2 = texture(p_ground_albedo_bump_2, ground_uv);
 	}
 	
 	vec3 col0 = ab0.rgb;
@@ -152,7 +152,7 @@ void fragment() {
 	vec3 col3 = ab3.rgb;
 	
 	vec4 w;
-	if (u_depth_blending) {
+	if (p_depth_blending) {
 		w = get_depth_blended_weights(v_splat, vec4(ab0.a, ab1.a, ab2.a, ab3.a));
 	} else {
 		w = v_splat.rgba;

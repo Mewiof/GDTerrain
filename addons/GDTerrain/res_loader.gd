@@ -1,25 +1,25 @@
-# Currently, "ResourceFormatSaver" / "ResourceFormatLoader" work through a** in C#, so we use GDScript
-
 @tool
 class_name TerrainResLoader
 extends ResourceFormatLoader
 
-const EXTENSION = "terrain" # ?
-const TYPE_STR = "Resource"
+const SAVER = preload("./res_saver.gd")
+const TYPE = "Resource"
+const SCRIPT = preload("./TerrainData.cs")
+const LOAD_METHOD_NAME = "Load"
 
 func _get_recognized_extensions():
-	return PackedStringArray([EXTENSION])
+	return PackedStringArray([SAVER.EXTENSION])
 
 func _get_resource_type(path):
-	var extension = path.get_extension().to_lower() # ?
-	if extension == EXTENSION:
-		return TYPE_STR
+	var extension = path.get_extension().to_lower()
+	if extension == SAVER.EXTENSION:
+		return TYPE
 	return ""
 
 func _handles_type(type):
-	return type == TYPE_STR
+	return type == TYPE
 
 func _load(path, original_path, use_sub_threads, cache_mode):
-	var resource = load("res://addons/GDTerrain/TerrainData.cs").new()
-	resource.call("Load", path.get_base_dir())
+	var resource = SCRIPT.new()
+	resource.call(LOAD_METHOD_NAME, path.get_base_dir())
 	return resource

@@ -2,15 +2,14 @@
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Godot;
-using GDTerrain.Native;
 
 namespace GDTerrain {
 
 	public static class Util {
 
 		/// <returns>
-		/// 16 = 16
-		/// <para>17 = 32</para>
+		/// 16 -> 16
+		/// <para>17 -> 32</para>
 		/// </returns>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static int NextPowerOfTwo(int value) {
@@ -26,8 +25,8 @@ namespace GDTerrain {
 
 		/// <summary>Performs positive int division with rounding to greater</summary>
 		/// <returns>
-		/// 4 / 2 = 2
-		/// <para>5 / 3 = 2</para>
+		/// 4 / 2 -> 2
+		/// <para>5 / 3 -> 2</para>
 		/// </returns>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static int UpDiv(int a, int b) {
@@ -302,14 +301,16 @@ namespace GDTerrain {
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static Image GetCroppedImage(Image source, int width, int height, Color? fill, Vector2i anchor) {
-			if (width == source.GetWidth() && height == source.GetHeight()) {
+			int sourceWidth = source.GetWidth();
+			int sourceHeight = source.GetHeight();
+			if (width == sourceWidth && height == sourceHeight) {
 				return source;
 			}
 			Image result = Image.Create(width, height, false, source.GetFormat());
 			if (fill.HasValue) {
 				result.Fill(fill.Value);
 			}
-			(Rect2i sourceRect, Vector2i destPos) = GetCroppedImageParams(source.GetWidth(), source.GetHeight(), width, height, anchor);
+			(Rect2i sourceRect, Vector2i destPos) = GetCroppedImageParams(sourceWidth, sourceHeight, width, height, anchor);
 			result.BlitRect(source, sourceRect, destPos);
 			return result;
 		}

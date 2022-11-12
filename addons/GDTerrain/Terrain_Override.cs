@@ -66,32 +66,32 @@ namespace GDTerrain {
 		}
 
 		private static readonly List<string> _aPIShaderParams = new() {
-			"u_terrain_heightmap",
-			"u_terrain_normalmap",
-			"u_terrain_colormap",
-			"u_terrain_splatmap",
-			"u_terrain_splatmap_1",
-			"u_terrain_splatmap_2",
-			"u_terrain_splatmap_3",
-			"u_terrain_splat_index_map",
-			"u_terrain_splat_weight_map",
-			"u_terrain_globalmap",
+			"p_map_height",
+			"p_map_normal",
+			"p_map_color",
+			"p_map_splat",
+			"p_map_splat_1",
+			"p_map_splat_2",
+			"p_map_splat_1",
+			"p_map_splat_index",
+			"p_map_splat_weight",
+			"p_map_global",
 
-			"u_terrain_inverse_transform",
-			"u_terrain_normal_basis",
+			"p_terrain_inv_transform",
+			"p_terrain_normal_basis",
 
-			"u_ground_albedo_bump_0",
-			"u_ground_albedo_bump_1",
-			"u_ground_albedo_bump_2",
-			"u_ground_albedo_bump_3",
+			"p_ground_albedo_bump_0",
+			"p_ground_albedo_bump_1",
+			"p_ground_albedo_bump_2",
+			"p_ground_albedo_bump_3",
 
-			"u_ground_normal_roughness_0",
-			"u_ground_normal_roughness_1",
-			"u_ground_normal_roughness_2",
-			"u_ground_normal_roughness_3",
+			"p_ground_normal_roughness_0",
+			"p_ground_normal_roughness_1",
+			"p_ground_normal_roughness_2",
+			"p_ground_normal_roughness_3",
 
-			"u_ground_albedo_bump_array",
-			"u_ground_normal_roughness_array"
+			"p_ground_albedo_bump_array",
+			"p_ground_normal_roughness_array"
 		};
 
 		public override Array<Dictionary> _GetPropertyList() {

@@ -135,8 +135,8 @@ namespace GDTerrain {
 
 		#region Paint
 		public void PaintHeight(TerrainData terrainData, Vector2 position, float factor) {
-			Image heightmapImage = terrainData.GetMapImage(TerrainData.MAP_HEIGHT);
-			ImageTexture heightmapTexture = terrainData.GetMapTexture(TerrainData.MAP_HEIGHT);
+			Image heightmapImage = terrainData.GetMapImage(TerrainData.MAP_HEIGHT, 0);
+			ImageTexture heightmapTexture = terrainData.GetMapTexture(TerrainData.MAP_HEIGHT, 0);
 
 			ModifiedMap mM = new(TerrainData.MAP_HEIGHT, 0, 0);
 			_modifiedMaps.Add(mM);
@@ -148,7 +148,7 @@ namespace GDTerrain {
 			Painter painter = _painters[0];
 
 			painter.SetBrushShader(_raiseShader);
-			painter.SetBrushShaderParam("u_factor", delta);
+			painter.SetBrushShaderParam("p_factor", delta);
 			painter.SetImage(heightmapImage, heightmapTexture);
 			painter.PaintInput(new((int)position.x, (int)position.y));
 		}

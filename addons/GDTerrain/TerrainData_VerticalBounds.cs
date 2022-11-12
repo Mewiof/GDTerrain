@@ -12,7 +12,7 @@ namespace GDTerrain {
 		private Image _chunkedVerticalBounds = new();
 
 		private Vector2 ComputeVerticalBoundsAt(int originX, int originY, int sizeX, int sizeY) {
-			Image heightmap = GetMapImage(MAP_HEIGHT);
+			Image heightmap = GetMapImage(MAP_HEIGHT, 0);
 			return Util.GetRedRange(heightmap, new(originX, originY, sizeX, sizeY));
 		}
 

@@ -19,9 +19,9 @@ namespace GDTerrain {
 		private static readonly Shader _noBlendShader = Plugin.LoadShader("Tools/Brush/Shaders/no_blend.gdshader");
 
 		// Common parameters
-		public const string SHADER_PARAM_SRC_TEXTURE = "u_src_texture";
-		public const string SHADER_PARAM_SRC_RECT = "u_src_rect";
-		public const string SHADER_PARAM_OPACITY = "u_opacity";
+		public const string SHADER_PARAM_SRC_TEXTURE = "p_src_texture";
+		public const string SHADER_PARAM_SRC_RECT = "p_src_rect";
+		public const string SHADER_PARAM_OPACITY = "p_opacity";
 
 		[Signal]
 		public delegate void TextureRegionChangedEventHandler(Rect2i rect);
@@ -57,7 +57,6 @@ namespace GDTerrain {
 			set => _brushOpacity = Mathf.Clamp(value, 0f, 1f);
 		}
 		#endregion
-		private Texture _brushTexture;//?
 		private Vector2i _lastBrushPosition;
 		private ShaderMaterial _brushMaterial = new();
 		private Image _image;
@@ -197,8 +196,9 @@ namespace GDTerrain {
 				if (sourceW != 0 && sourceH != 0) {
 					MarkModifiedChunks(destX, destY, sourceW, sourceH);
 					// TODO: partial texture update has not yet been implemented, so for now we are updating the full texture
-					RenderingServer.Texture2dUpdate(_texture.GetRid(), data, 0);
-					_ = EmitSignal(nameof(TextureRegionChanged), new Rect2i(destX, destY, sourceW, sourceH));
+					_image.BlitRect(data, new(sourceX, sourceY, sourceW, sourceH), new(destX, destY));
+					RenderingServer.Texture2dUpdate(_texture.GetRid(), _image, 0);
+					_ = EmitSignal(SignalName.TextureRegionChanged, new Rect2i(destX, destY, sourceW, sourceH));
 				}
 			}
 
@@ -216,11 +216,6 @@ namespace GDTerrain {
 			return new(d, d);
 		}
 
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		private static Vector2i Multiply(Vector2i source, float value) {
-			return new((int)(source.x * value), (int)(source.y * value));
-		}
-
 		// TODO: Vector2i?
 		public void PaintInput(Vector2i centerPos) {
 			Vector2i viewportSize = GetSizeFitForRotation(new(brushSize, brushSize));
@@ -231,7 +226,7 @@ namespace GDTerrain {
 			}
 
 			// it is necessary to floor position in case brush has an odd size
-			Vector2i brushPos = centerPos - Multiply(_subViewport.Size, .5f);
+			Vector2i brushPos = (Vector2i)((Vector2)centerPos - ((Vector2)viewportSize * .5f)).Round();//?
 			_subViewport.RenderTargetUpdateMode = SubViewport.UpdateMode.Once;//?
 			_subViewport.RenderTargetClearMode = SubViewport.ClearMode.Once;//?
 			_viewportBackgroundSprite.Position = -brushPos;

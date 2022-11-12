@@ -63,9 +63,9 @@ namespace GDTerrain {
 
 		public void OnTargetTerrainTransformChanged(Transform3D value) {
 			Transform3D inv = value.AffineInverse();
-			_material.SetShaderParameter("u_terrain_inverse_transform", inv);
+			_material.SetShaderParameter("p_terrain_inv_transform", inv);
 			Basis normalBasis = value.basis.Inverse().Transposed();
-			_material.SetShaderParameter("u_terrain_normal_basis", normalBasis);
+			_material.SetShaderParameter("p_terrain_normal_basis", normalBasis);
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -96,18 +96,18 @@ namespace GDTerrain {
 			if (terrainData == null) {
 				return null;
 			}
-			return terrainData.GetMapTexture(TerrainData.MAP_HEIGHT);
+			return terrainData.GetMapTexture(TerrainData.MAP_HEIGHT, 0);
 		}
 
 		public void UpdateVisibility() {
 			ImageTexture heightmapTexture = GetHeightmapTexture();
 			if (heightmapTexture == null) {
 				//Logger.DebugLog($"{nameof(BrushDecal)}->{nameof(UpdateVisibility)}->'heightmapTexture == null'");
-				_material.SetShaderParameter("u_terrain_heightmap", default);
+				_material.SetShaderParameter("p_map_height", default);
 				_directMeshInstance.Visible = false;
 				return;
 			}
-			_material.SetShaderParameter("u_terrain_heightmap", heightmapTexture);
+			_material.SetShaderParameter("p_map_height", heightmapTexture);
 			_directMeshInstance.Visible = true;
 		}
 	}

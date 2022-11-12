@@ -1,4 +1,5 @@
-﻿using Godot;
+﻿using System;
+using Godot;
 
 namespace GDTerrain {
 
@@ -13,86 +14,126 @@ namespace GDTerrain {
 			MAP_COLOR = 3,
 			MAP_DETAIL = 4,
 			MAP_GLOBAL_ALBEDO = 5,
-			MAP_SPLAT_INDEX = 6,
-			MAP_SPLAT_WEIGHT = 7;
+			MAP_SPLAT_IND = 6,
+			MAP_SPLAT_WEI = 7;
 
 		public sealed class MapTypeInfo {
 
 			public string name;
-			public string[] shaderParamName;
 			public Image.Format format;
-			public Color[] defaultFill;
+			public Color[] defaultFillArr;
 			public int defaultCount;
 			public bool authored;
+
+			public string GetShaderParamName(int index) {
+				string result = "p_map_" + name;
+				if (index != 0) {
+					result += "_" + index;
+				}
+				return result;
+			}
+
+			public Color? GetDefaultFill(int index) {
+				if (defaultFillArr == null || defaultFillArr.Length <= index) {
+					return null;
+				}
+				return defaultFillArr[index];
+			}
 		}
 
 		/// <summary>Contains information about different types of maps</summary>
 		private static readonly MapTypeInfo[] _mapTypes = new MapTypeInfo[MAP_TYPE_COUNT] {
 			new() {
 				name = "height",
-				shaderParamName = new string[] { "u_terrain_heightmap" },
 				format = Image.Format.Rh,
-				defaultFill = null,
 				defaultCount = 1,
 				authored = true
 			},
 			new() {
 				name = "normal",
-				shaderParamName = new string[] { "u_terrain_normalmap" },
 				format = Image.Format.Rgb8,
-				defaultFill = new Color[] { new(.5f, .5f, 1f) },
+				defaultFillArr = new Color[] { new(.5f, .5f, 1f) },
 				defaultCount = 1,
 				authored = false
 			},
 			new() {
 				name = "splat",
-				shaderParamName = new string[] { "u_terrain_splatmap", "u_terrain_splatmap_1", "u_terrain_splatmap_2", "u_terrain_splatmap_3" },
 				format = Image.Format.Rgba8,
-				defaultFill = new Color[] { new(1f, 0f, 0f, 0f), new(0f, 0f, 0f, 0f) },
+				defaultFillArr = new Color[] { new(1f, 0f, 0f, 0f), new(0f, 0f, 0f, 0f) },
 				defaultCount = 1,
 				authored = true
 			},
 			new() {
 				name = "color",
-				shaderParamName = new string[] { "u_terrain_colormap" },
 				format = Image.Format.Rgba8,
-				defaultFill = new Color[] { new(1f, 1f, 1f, 1f) },
+				defaultFillArr = new Color[] { new(1f, 1f, 1f) },
 				defaultCount = 1,
 				authored = true
 			},
 			new() {
 				name = "detail",
-				shaderParamName = new string[] { "u_terrain_detailmap" },
 				format = Image.Format.R8,
-				defaultFill = new Color[] { new(0f, 0f, 0f) },
+				defaultFillArr = new Color[] { new(0f, 0f, 0f) },
 				defaultCount = 0,
 				authored = true
 			},
 			new() {
 				name = "global_albedo",
-				shaderParamName = new string[] { "u_terrain_globalmap" },
 				format = Image.Format.Rgb8,
-				defaultFill = null,
+				defaultFillArr = null,
 				defaultCount = 0,
 				authored = false
 			},
 			new() {
 				name = "splat_index",
-				shaderParamName = new string[] { "u_terrain_splat_index_map" },
 				format = Image.Format.Rgb8,
-				defaultFill = new Color[] { new(0f, 0f, 0f) },
+				defaultFillArr = new Color[] { new(0f, 0f, 0f) },
 				defaultCount = 0,
 				authored = true
 			},
 			new() {
 				name = "splat_weight",
-				shaderParamName = new string[] { "u_terrain_splat_weight_map" },
 				format = Image.Format.Rg8,
-				defaultFill = new Color[] { new(1f, 0f, 0f) },
+				defaultFillArr = new Color[] { new(1f, 0f, 0f) },
 				defaultCount = 0,
 				authored = true
 			}
 		};
+
+		public sealed class Map {
+
+			// For saving
+			public int index;
+
+			public ImageTexture texture;
+			public Image image;
+			public bool modified = true;
+
+			public Map(int index) {
+				this.index = index;
+			}
+
+			public Godot.Collections.Dictionary Serialize() {
+				return new Godot.Collections.Dictionary() {
+					{ "id", index }
+				};
+			}
+
+			public static Map Deserialize(Godot.Collections.Dictionary value) {
+				return new(value["id"].AsInt32());
+			}
+
+			public void CreateDefaultImage(int resolution, MapTypeInfo mapTypeInfo, int fillIndex = -1) {
+				image = Image.Create(resolution, resolution, false, mapTypeInfo.format);
+
+				if (fillIndex > -1) {
+					Color? fillColor = mapTypeInfo.GetDefaultFill(fillIndex);
+					if (fillColor.HasValue) {
+						image.Fill(fillColor.Value);
+					}
+				}
+			}
+		}
 
 		/// <summary>[typeIndex][index]</summary>
 		private readonly Map[][] _arrayOfMapArrays = new Map[MAP_TYPE_COUNT][];
@@ -113,29 +154,52 @@ namespace GDTerrain {
 			return _arrayOfMapArrays[mapTypeIndex].Length;
 		}
 
-		public Image GetMapImage(int mapTypeIndex, int index = 0) {
+		public Image GetMapImage(int mapTypeIndex, int index) {
 			return _arrayOfMapArrays[mapTypeIndex][index].image;
 		}
 
-		public ImageTexture GetMapTexture(int mapTypeIndex, int index = 0) {
-			return _arrayOfMapArrays[mapTypeIndex][index].texture;
+		public ImageTexture GetMapTexture(int mapTypeIndex, int index) {
+			Map map = _arrayOfMapArrays[mapTypeIndex][index];
+
+			if (map.image != null && map.texture == null) {
+				UpdateMapTexture(mapTypeIndex, index);
+			}
+
+			return map.texture;
 		}
 
 		public float GetMapHeightAt(int x, int y) {
-			Image image = GetMapImage(MAP_HEIGHT);
+			Image image = GetMapImage(MAP_HEIGHT, 0);
 			return Util.GetPixelClamped(image, x, y).r;
 		}
 
-		public static string GetMapShaderParamName(int mapTypeIndex, int index = 0) {
-			return _mapTypes[mapTypeIndex].shaderParamName[index];
+		public static string GetMapShaderParamName(int mapTypeIndex, int index) {
+			return _mapTypes[mapTypeIndex].GetShaderParamName(index);
 		}
 
-		public static Color? GetMapDefaultFill(int mapTypeIndex, int index = 0) {
-			Color[] value = _mapTypes[mapTypeIndex].defaultFill;
-			if (value == null) {
-				return null;
+		[Signal]
+		public delegate void MapChangedEventHandler(int typeIndex, int index);
+
+		private void UpdateMapTextureRegion(int mapTypeIndex, int index, int minX, int minY, int sizeX, int sizeY) {
+			Map map = _arrayOfMapArrays[mapTypeIndex][index];
+
+			if (map.image == null) {
+				throw new Exception("'image == null'");
 			}
-			return value[index];
+
+			if (map.texture == null) {
+				map.texture = ImageTexture.CreateFromImage(map.image);
+				_ = EmitSignal(SignalName.MapChanged, mapTypeIndex, index);
+			} else if (map.texture.GetSize() != map.image.GetSize()) {
+				map.texture = ImageTexture.CreateFromImage(map.image);
+			} else {
+				// TODO: partial texture update has not yet been implemented, so for now we are updating the full texture
+				RenderingServer.Texture2dUpdate(map.texture.GetRid(), map.image, 0);
+			}
+		}
+
+		private void UpdateMapTexture(int mapTypeIndex, int index) {
+			UpdateMapTextureRegion(mapTypeIndex, index, 0, 0, Resolution, Resolution);
 		}
 	}
 }

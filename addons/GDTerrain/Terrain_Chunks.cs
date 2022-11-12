@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Godot;
-using GDTerrain.Native;
 
 namespace GDTerrain {
 

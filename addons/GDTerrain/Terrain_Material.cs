@@ -48,9 +48,9 @@ namespace GDTerrain {
 		#endregion
 
 		private void Init_Material() {
-			_material.SetShaderParameter("u_ground_uv_scale", 20);
-			_material.SetShaderParameter("u_ground_uv_scale_vec4", new Color(20f, 20f, 20f, 20f));
-			_material.SetShaderParameter("u_depth_blending", true);
+			_material.SetShaderParameter("p_ground_uv_scale", 1);
+			_material.SetShaderParameter("p_ground_uv_scale_vec4", new Color(20f, 20f, 20f, 20f));
+			_material.SetShaderParameter("p_depth_blending", true);
 
 			_material.Shader = ResourceLoader.Load<Shader>(_builtInShaders[_shaderType]);
 
@@ -78,10 +78,10 @@ namespace GDTerrain {
 			if (IsInsideTree()) {
 				Transform3D gT = InternalTransform;
 				Transform3D t = gT.AffineInverse();
-				_material.SetShaderParameter("u_terrain_inverse_transform", t);
+				_material.SetShaderParameter("p_terrain_inv_transform", t);
 
 				Basis normalBasis = gT.basis.Inverse().Transposed();
-				_material.SetShaderParameter("u_terrain_normal_basis", normalBasis);
+				_material.SetShaderParameter("p_terrain_normal_basis", normalBasis);
 			}
 
 			foreach (KeyValuePair<string, ImageTexture> keyValuePair in terrainTextures) {

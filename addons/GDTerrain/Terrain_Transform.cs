@@ -89,7 +89,7 @@ namespace GDTerrain {
 			Transform3D internalTransform = InternalTransform;
 			ForAllChunks(item => item.OnParentTransformChanged(internalTransform));
 
-			EmitSignal(nameof(TransformChanged), internalTransform);
+			_ = EmitSignal(nameof(TransformChanged), internalTransform);
 		}
 	}
 }
